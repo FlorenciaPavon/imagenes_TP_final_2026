@@ -23,7 +23,11 @@ EXTENSIONS = {"PNG": ".png", "JPEG": ".jpg", "WEBP": ".webp", "BMP": ".bmp"}
 def read_upload(stream: BinaryIO, max_bytes: int = config.MAX_SIZE_BYTES) -> bytes:
     """Reads an uploaded file into memory, failing as soon as it exceeds `max_bytes`."""
     buffer = bytearray()
-    while chunk := stream.read(CHUNK_SIZE):
+    while chunk := stream.read(CHUNK_SIZE):# operador walrus Ejecuta stream.read(CHUNK_SIZE) y obtiene un resultado.
+#Guarda ese resultado en la variable chunk.
+#El while evalúa si chunk tiene contenido:
+#Si read() devuelve datos (bytes), chunk contiene esos datos y la condición es verdadera.
+#Si devuelve b'' (bytes vacíos), la condición es falsa y el bucle termina
         buffer.extend(chunk)
         if len(buffer) > max_bytes:
             raise FileTooLarge(max_bytes)
