@@ -22,9 +22,9 @@ from app.models import ImageRecord
 
 class ImageService:
     def __init__(self, dal: ImageDAL, storage: FileStorage, codec: ImageCodec) -> None:
-        self._dal = dal
-        self._storage = storage
-        self._codec = codec
+        self._dal = dal #Accede a la base de datos.
+        self._storage = storage #Guarda, lee y elimina archivos.
+        self._codec = codec #Abre, inspecciona y prepara imágenes.
 
     def upload(self, original_name: str, stream: BinaryIO) -> ImageRecord:
         """Validates (size -> is an image -> allowed format), saves the file as received
@@ -57,7 +57,8 @@ class ImageService:
         record = self.get(image_id)
         self._dal.delete(record)
         self._storage.delete(record.file_name)
-
+'''
+ESTE NO ME SIRVE NO VOY A MODIFICAR LA IMAGEN
     def apply(self, image_id: int, operation: Operation) -> ImageRecord:
         """Applies `operation` to the image `image_id` and records the result as a new image."""
         source = self.get(image_id)
@@ -77,3 +78,7 @@ class ImageService:
             parameters=operation.parameters,
             source_id=source.id,
         )
+'''
+
+def analyze():
+    pass
