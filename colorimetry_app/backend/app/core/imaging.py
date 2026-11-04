@@ -19,7 +19,7 @@ encaja muy bien con FastAPI
 """
 
 from dataclasses import dataclass #permite crear clases destinadas principalmente a almacenar datos.
-from io import BytesIO #permite trabajar con bytes como si fueran un archivo en memoria.
+from io import BytesIO #permite trabajar con bytes como si fueran un archivo en memoria. permite que Pillow trate esos bytes como un archivo.
 
 from PIL import Image
 
@@ -57,7 +57,7 @@ class ImageCodec:
         have to deal with those three.
         """
         image = Image.open(BytesIO(content))
-        image.load()
+        image.load() #decodifica y carga los píxeles de la imagen en memoria.
         if image.mode in ("L", "RGB", "RGBA"):
             return image
         if image.mode == "1":
@@ -69,6 +69,9 @@ class ImageCodec:
 #    inspect(): recibe la imagen en bytes, intenta abrirla para verificar que sea una imagen válida y devuelve información sobre ella: formato, ancho y alto. No prepara la imagen para procesarla.
 #open(): también recibe los bytes, pero esta vez carga la imagen y la prepara para trabajar con sus píxeles. Para eso normaliza su modo de color a L, RGB o RGBA.
 
+
+'''
+PARECERIA QUE NO LA NECESITAMOS POR AHORA   
     def encode(self, image: Image.Image, image_format: str) -> bytes:
         """Encodes `image` in `image_format`, converting its color mode if that format
         cannot store it (e.g. RGBA in JPEG)."""
@@ -76,6 +79,7 @@ class ImageCodec:
             image = image.convert("RGB")
         elif image.mode not in ("L", "RGB", "RGBA"):
             image = image.convert("RGBA" if "A" in image.mode else "RGB")
-        buffer = BytesIO()
+        buffer = BytesIO() 
         image.save(buffer, format=image_format)
         return buffer.getvalue()
+'''
