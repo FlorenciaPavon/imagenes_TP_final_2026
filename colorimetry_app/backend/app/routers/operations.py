@@ -47,6 +47,8 @@ from app.schemas import (
 
 router = APIRouter(prefix="/api/images/{image_id}", tags=["operations"])
 
+
+'''
 OPTIONS = dict(
     response_model=ImageOut,
     status_code=status.HTTP_201_CREATED,
@@ -106,3 +108,4 @@ def apply_mirror(image_id: int, params: MirrorIn, service: ImageService = Depend
 @router.post("/resize", summary="10. Resize", **OPTIONS)
 def apply_resize(image_id: int, params: ResizeIn, service: ImageService = Depends(get_image_service)):
     return service.apply(image_id, Resize(**params.model_dump()))
+'''

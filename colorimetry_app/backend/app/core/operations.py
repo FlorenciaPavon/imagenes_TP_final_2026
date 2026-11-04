@@ -18,6 +18,14 @@ from PIL import Image
 from app.core.exceptions import NotImplementedFeature
 
 
+'''
+Mantengo operations pero se tiene que encargar de funciones relacionadas con:
+- Recibir las coordenadas seleccionadas.
+- Obtener una pequeña región alrededor de cada punto.
+- Extraer los píxeles de esa región.
+- Calcular un color representativo, por ejemplo, mediante la mediana de los valores RGB.
+'''
+
 class Operation(ABC):
     name: ClassVar[str]
 
