@@ -7,84 +7,57 @@ request format (if it fails, FastAPI responds 422); the domain rules (for exampl
 that the kernel must be odd) are validated in the core classes and answered with 400.
 """
 
-from datetime import datetime
-from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
+
+from pydantic import BaseModel, Field
 
 # Name of each operation. Matches the last segment of its route
-# (POST /api/images/{id}/<name>) and is the value of `ImageOut.operation`.
 
-''' NO TENEMOS OPERACIONES
-OperationName = Literal[
-    "brightness",
-    "contrast",
-    "saturation",
-    "sharpness",
-    "grayscale",
-    "blur",
-    "edges",
-    "rotation",
-    "mirror",
-    "resize",
-]
-'''
 ImageFormat = Literal["PNG", "JPEG", "WEBP", "BMP"]
 
 ErrorCode = Literal[
-    "NOT_IMPLEMENTED",
-    "IMAGE_NOT_FOUND",
-    "UNSUPPORTED_FORMAT",
     "INVALID_FILE",
+    "UNSUPPORTED_FORMAT",
     "FILE_TOO_LARGE",
-    "INVALID_PARAMETERS",
+    "INVALID_PARAMETERS", #Los datos recibidos no cumplen alguna regla del análisis. Reglas de negoocio
+    "INVALID_COORDINATES", #	Alguna coordenada está fuera de los límites de la imagen.
 ]
 
 
 # ---------------------------------------------------------------------------
 # Output
 # ---------------------------------------------------------------------------
-'''DESCARTADO
-class ImageOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
 
-    id: int
-    original_name: str = Field(
-        description="File name as uploaded by the user. Derived images inherit the one from their source."
-    )
-    url: str = Field(description="Public URL of the file: '/media/<file_name>'")
-    width: int = Field(description="In pixels")
-    height: int = Field(description="In pixels")
-    format: ImageFormat = Field(description="Actual format of the stored file")
-    size_bytes: int = Field(description="Size of the file stored on disk")
-    operation: OperationName | None = Field(
-        None, description="Operation that generated the image. null if it is an original image."
-    )
-    parameters: dict[str, Any] | None = Field(
-        None,
-        description=(
-            "Operation parameters with the default values already applied "
-            "(equivalent to `params.model_dump()`). {} for grayscale; null if it is an original image."
-        ),
-    )
-    source_id: int | None = Field(
-        None,
-        description="Id of the image the operation was applied to. null if original or if its source was deleted.",
-    )
-    created_at: datetime
-'''
 
 class ErrorDetail(BaseModel):
     code: ErrorCode
     message: str = Field(description="Message for the user")
-    feature: str | None = Field(None, description="Only present in NOT_IMPLEMENTED")
+   
 
 
 class ErrorResponse(BaseModel):
     """Body of ALL custom error responses (400, 404, 413, 501)."""
-    detail: ErrorDetail
 
+class PointSelection(BaseModel):#permite que Pydantic valide los datos.
+    x: int = Field(..., ge=0) #Field(...): indica que el dato es obligatorio. ge=0: significa greater than or equal to 0, es decir, mayor o igual a cero.
+    y: int = Field(..., ge=0)
 
+class Selections(BaseModel):
+    skin: PointSelection
+    eyes: PointSelection
+    hair: PointSelection
+'''no estamos declarando nuevamente x e y.
+
+Estamos diciendo que cada atributo (skin, eyes, hair) debe ser un objeto que cumpla con la estructura de PointSelection.
+por ej
+selections = Selections(
+    skin={"x": 250, "y": 180},
+    eyes={"x": 270, "y": 130},
+    hair={"x": 300, "y": 60}
+)
+Pydantic valida los tres puntos utilizando las mismas reglas. sino manda error 422: el formato o la estructura de los datos recibidos no cumple el esquema definido.
+'''
 # ---------------------------------------------------------------------------
 # Input: parameters of each operation
 # ---------------------------------------------------------------------------
