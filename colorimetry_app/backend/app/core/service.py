@@ -6,7 +6,8 @@ Use cases of the application: image analysis.
 from app import config
 from app.core.exceptions import UnsupportedFormat, InvalidCoordinates
 from app.core.imaging import ImageCodec
-from app.schemas import Selections, AnalysisResponse
+from app.schemas import Selections, AnalysisResponse, ExtractedColors, RGBColor
+from app.core.operations import get_representative_color
 
 
 class AnalysisService:
@@ -31,3 +32,17 @@ class AnalysisService:
                     info.width,
                     info.height
                 )
+
+        skin_color = get_representative_color(image, selections.skin.x, selections.skin.y)
+
+        eyes_color = get_representative_color(image, selections.eyes.x, selections.eyes.y)
+
+        hair_color = get_representative_color(image, selections.hair.x, selections.hair.y)
+
+        extracted_colors = ExtractedColors(
+            skin=RGBColor(*skin_color),
+            eyes=RGBColor(*eyes_color),
+            hair=RGBColor(*hair_color)
+        )
+
+        return extracted_colors #a cambiar mas tarde, el return debe ser AnalysisResponse
