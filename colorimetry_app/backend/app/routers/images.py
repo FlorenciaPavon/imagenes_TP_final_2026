@@ -7,11 +7,11 @@ errors are translated to HTTP by the exception handler in `app/errors.py`.
 
 from fastapi import APIRouter, Depends, File, UploadFile, status #permite agrupar endpoints relacionados. permite inyectar dependencias, en este caso el servicio. status: proporciona constantes para los códigos HTTP
 
-from app.core.service import ImageService ImageService: contiene la lógica que coordina el procesamiento.
+from app.core.service import ImageService ImageService# contiene la lógica que coordina el procesamiento.
 from app.dependencies import get_image_service #revisar
 from app.schemas import ErrorResponse, ImageOut #error response revisar
 
-router = APIRouter(prefix="/api/images", tags=["images"]) #todos los endpoints de este router empiezan con /api/images.
+router = APIRouter(prefix="/api", tags=["analysis"]) #todos los endpoints de este router empiezan con /api/images.
 
 ERROR_RESPONSES = {#revisar
     404: {"model": ErrorResponse, "description": "IMAGE_NOT_FOUND: the image does not exist"},
@@ -21,8 +21,8 @@ ERROR_RESPONSES = {#revisar
 
 @router.post(
     "",
-    response_model=ImageOut,
-    status_code=status.HTTP_201_CREATED,
+    rresponse_model=AnalysisResponse,
+    status_code=status.HTTP_200_OK,
     responses={
         400: {"model": ErrorResponse, "description": "UNSUPPORTED_FORMAT or INVALID_FILE"},
         413: {"model": ErrorResponse, "description": "FILE_TOO_LARGE: exceeds MAX_SIZE_BYTES"},
