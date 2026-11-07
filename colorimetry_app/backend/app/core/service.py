@@ -4,7 +4,7 @@ Use cases of the application: image analysis.
 """
 
 from app import config
-from app.core.exceptions import UnsupportedFormat
+from app.core.exceptions import UnsupportedFormat, InvalidCoordinates
 from app.core.imaging import ImageCodec
 from app.schemas import Selections, AnalysisResponse
 
@@ -24,4 +24,10 @@ class AnalysisService:
         points = (selections.skin, selections.eyes, selections.hair)
 
         for point in points:
-            pass  # Aquí nos quedamos.
+            if point.x >= info.width or point.y >= info.height:
+                raise InvalidCoordinates(
+                    point.x,
+                    point.y,
+                    info.width,
+                    info.height
+                )

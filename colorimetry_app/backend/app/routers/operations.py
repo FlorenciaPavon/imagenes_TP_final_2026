@@ -1,111 +1,47 @@
 """
-Image editing endpoints.
+Color extraction operations.
 
-Each endpoint applies ONE operation to the image `image_id` and returns the
-resulting image, which is a NEW image (stored on disk and in the database with
-`source_id = image_id`). The original image is never modified.
-
-Common rules (see section 5 of the assignment):
-  - parameters are validated BEFORE looking up the image (400 takes priority over 404);
-  - the result keeps the file format of the source;
-  - `parameters` in the response = `params.model_dump()` ({} for grayscale).
-
-Each endpoint builds the operation (which validates its domain rules in the
-constructor, so a 400 happens before looking up the image) and hands it to
-`ImageService.apply`.
 """
+from statistics import median
 
-from fastapi import APIRouter, Depends, status
+def get_region_pixels(image, x: int, y: int) -> list:
+    """
+    Obtiene los píxeles de una región de 5x5 alrededor del punto seleccionado.
+    """
 
-from app.core.operations import (
-    Blur,
-    Brightness,
-    Contrast,
-    Edges,
-    Grayscale,
-    Mirror,
-    Resize,
-    Rotation,
-    Saturation,
-    Sharpness,
-)
-from app.core.service import ImageService
-from app.dependencies import get_image_service
-from app.schemas import (
-    BlurIn,
-    BrightnessIn,
-    ContrastIn,
-    EdgesIn,
-    ErrorResponse,
-    ImageOut,
-    MirrorIn,
-    ResizeIn,
-    RotationIn,
-    SaturationIn,
-    SharpnessIn,
-)
+    x_inicio = max(0, x - 2)
+    x_fin = min(image.width, x + 3)
 
-router = APIRouter(prefix="/api/images/{image_id}", tags=["operations"])
+    y_inicio = max(0, y - 2)
+    y_fin = min(image.height, y + 3)    
 
+    pixels = []
 
-'''
-OPTIONS = dict(
-    response_model=ImageOut,
-    status_code=status.HTTP_201_CREATED,
-    responses={
-        400: {"model": ErrorResponse, "description": "INVALID_PARAMETERS: a domain rule is violated"},
-        404: {"model": ErrorResponse, "description": "IMAGE_NOT_FOUND: the source image does not exist"},
-        501: {"model": ErrorResponse, "description": "NOT_IMPLEMENTED"},
-    },
-)
+    for row in range(y_inicio, y_fin):
+        for col in range(x_inicio, x_fin):
+            pixel = image.getpixel((col, row))
+            pixels.append(pixel)
+        
 
+    return pixels
 
-@router.post("/brightness", summary="1. Adjust brightness", **OPTIONS)
-def apply_brightness(image_id: int, params: BrightnessIn, service: ImageService = Depends(get_image_service)):
-    return service.apply(image_id, Brightness(**params.model_dump()))
+def get_representative_color(image, x: int, y: int) -> tuple[int, int, int]:
+    image = image.convert("RGB") #que pasa con los grises?
+    pixels = get_region_pixels(image, x, y)
 
+    reds = []
+    greens = []
+    blues = []
 
-@router.post("/contrast", summary="2. Adjust contrast", **OPTIONS)
-def apply_contrast(image_id: int, params: ContrastIn, service: ImageService = Depends(get_image_service)):
-    return service.apply(image_id, Contrast(**params.model_dump()))
+    for pixel in pixels:
+        reds.append(pixel[0])
+        greens.append(pixel[1])
+        blues.append(pixel[2])  
 
+    median_red = round(median(reds))
+    median_green =round(median(greens))
+    median_blue = round(median(blues))
 
-@router.post("/saturation", summary="3. Adjust saturation", **OPTIONS)
-def apply_saturation(image_id: int, params: SaturationIn, service: ImageService = Depends(get_image_service)):
-    return service.apply(image_id, Saturation(**params.model_dump()))
+    representative_color = (median_red, median_green, median_blue)
+    return representative_color
 
-
-@router.post("/sharpness", summary="4. Adjust sharpness", **OPTIONS)
-def apply_sharpness(image_id: int, params: SharpnessIn, service: ImageService = Depends(get_image_service)):
-    return service.apply(image_id, Sharpness(**params.model_dump()))
-
-
-@router.post("/grayscale", summary="5. Convert to grayscale", **OPTIONS)
-def apply_grayscale(image_id: int, service: ImageService = Depends(get_image_service)):
-    return service.apply(image_id, Grayscale())
-
-
-@router.post("/blur", summary="6. Blur", **OPTIONS)
-def apply_blur(image_id: int, params: BlurIn, service: ImageService = Depends(get_image_service)):
-    return service.apply(image_id, Blur(**params.model_dump()))
-
-
-@router.post("/edges", summary="7. Detect edges (Canny)", **OPTIONS)
-def apply_edges(image_id: int, params: EdgesIn, service: ImageService = Depends(get_image_service)):
-    return service.apply(image_id, Edges(**params.model_dump()))
-
-
-@router.post("/rotation", summary="8. Rotate", **OPTIONS)
-def apply_rotation(image_id: int, params: RotationIn, service: ImageService = Depends(get_image_service)):
-    return service.apply(image_id, Rotation(**params.model_dump()))
-
-
-@router.post("/mirror", summary="9. Mirror", **OPTIONS)
-def apply_mirror(image_id: int, params: MirrorIn, service: ImageService = Depends(get_image_service)):
-    return service.apply(image_id, Mirror(**params.model_dump()))
-
-
-@router.post("/resize", summary="10. Resize", **OPTIONS)
-def apply_resize(image_id: int, params: ResizeIn, service: ImageService = Depends(get_image_service)):
-    return service.apply(image_id, Resize(**params.model_dump()))
-'''

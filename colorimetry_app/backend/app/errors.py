@@ -10,12 +10,11 @@ from fastapi.responses import JSONResponse
 from app.core.exceptions import DomainError
 
 HTTP_STATUS: dict[str, int] = {
-    "NOT_IMPLEMENTED": 501,
-    "IMAGE_NOT_FOUND": 404,
     "UNSUPPORTED_FORMAT": 400,
     "INVALID_FILE": 400,
     "INVALID_PARAMETERS": 400,
     "FILE_TOO_LARGE": 413,
+    "INVALID_COORDINATES": 400,
 }
 
 

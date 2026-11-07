@@ -56,6 +56,24 @@ class UnsupportedFormat(DomainError):
         super().__init__(f"The format '{image_format}' is not supported. Use PNG, JPEG, WEBP or BMP.")
         self.image_format = image_format
 
+class InvalidCoordinates(DomainError):
+    code = "INVALID_COORDINATES"
+
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        width: int,
+        height: int
+    ) -> None:
+        super().__init__(
+            f"The selected point ({x}, {y}) is outside "
+            f"the image boundaries ({width}x{height})."
+        )
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
 
 class FileTooLarge(DomainError):
     code = "FILE_TOO_LARGE"
