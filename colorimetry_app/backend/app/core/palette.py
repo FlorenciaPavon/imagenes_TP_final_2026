@@ -78,4 +78,15 @@ def contrast(skin_v, eyes_v, hair_v):
 def classify_contrast():
     pass
 
+def get_luminosity_contrast(skin_l: float, eyes_l: float, hair_l: float) -> float:
+    l_max= max(skin_l, eyes_l, hair_l)
+    l_min= min(skin_l, eyes_l, hair_l)
 
+    contrast = l_max-l_min
+
+    return contrast
+
+print(get_luminosity_contrast(65, 35, 15))
+
+def alyze_color_relationships():
+    pass
