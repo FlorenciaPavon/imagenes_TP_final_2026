@@ -85,6 +85,14 @@ def get_luminosity_contrast(skin_l: float, eyes_l: float, hair_l: float) -> floa
     contrast = l_max-l_min
 
     return contrast
+def get_hue_angle_difference(h1: float, h2: float) -> float:
+
+    abs_difference = abs(h1-h2)
+    compared_difference = 360-abs_difference
+
+    min_complementary_difference = min(abs_difference, compared_difference )
+
+    return min_complementary_difference
 
 def get_pairwise_luminosity_differences(skin_l, eyes_l, hair_l) -> dict:
 
@@ -127,11 +135,21 @@ def get_pairwise_chromaticity_differences(skin_c, eyes_c, hair_c) -> dict:
                 
     return pairwise_chrom_differences
 
-def get_hue_angle_difference(h1: float, h2: float) -> float:
+def get_pairwise_hue_differences(skin_h, eyes_h, hair_h) -> dict:
+    cont_hue_skin_eyes= get_hue_angle_difference(skin_h, eyes_h)
+    cont_hue_eyes_hair=get_hue_angle_difference(eyes_h,hair_h)
+    cont_hue_skin_hair=get_hue_angle_difference(skin_h,hair_h)
+        
+    pairwise_hue_differences = {
+        "skin_eyes": cont_hue_skin_eyes,
+        "eyes_hair": cont_hue_eyes_hair,
+        "skin_hair":cont_hue_skin_hair,            
+        }
+                    
+    return pairwise_hue_differences
 
-    Calcular la diferencia absoluta.
-    Calcular la diferencia complementaria respecto de 360°.
-    Devolver la menor de las dos.
+
+    
 
 def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[int, int, int], hair_rgb: tuple[int, int, int]) -> dict:
 
@@ -142,16 +160,17 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
     skin_l = skin["lab"][0]
     skin_v = skin["hsv"][2]
     skin_c= skin["chromaticity"]
+    skin_h =skin["hue_angle"]
 
     eyes_l = eyes["lab"][0]
     eyes_v = eyes["hsv"][2]
     eyes_c = eyes["chromaticity"]
+    eyes_h = eyes["hue_angle"]
 
     hair_l = hair["lab"][0]
     hair_v = hair["hsv"][2]
     hair_c = hair["chromaticity"]
-
-
+    hair_h = hair["hue_angle"]
 
     hsv_contrast = contrast(skin_v,eyes_v,hair_v)
     lab_contrast= get_luminosity_contrast(skin_l,eyes_l,hair_l)   
@@ -159,6 +178,7 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
     pairwise_luminosity_differences= get_pairwise_luminosity_differences(skin_l, eyes_l, hair_l)
     pairwise_value_differences=get_pairwise_value_differences(skin_v, eyes_v, hair_v)
     pairwise_chrom_differences = get_pairwise_chromaticity_differences(skin_c, eyes_c, hair_c)
+    pairwise_hue_differences = get_pairwise_hue_differences(skin_h, eyes_h, hair_h)
 
     colors_relationships= {
         "skin": skin,
@@ -170,7 +190,8 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
         },
         "pairwise_luminosity_differences": pairwise_luminosity_differences,
         "pairwise_value_differences": pairwise_value_differences,
-        "pairwise_chrom_differences": pairwise_chrom_differences
+        "pairwise_chrom_differences": pairwise_chrom_differences,
+        "pairwise_hue_differences": pairwise_hue_differences
     }
     return colors_relationships
 
