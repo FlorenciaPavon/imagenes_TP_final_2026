@@ -86,7 +86,32 @@ def get_luminosity_contrast(skin_l: float, eyes_l: float, hair_l: float) -> floa
 
     return contrast
 
-print(get_luminosity_contrast(65, 35, 15))
+def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[int, int, int], hair_rgb: tuple[int, int, int]) -> dict:
 
-def alyze_color_relationships():
-    pass
+    skin = describe_color(skin_rgb)
+    eyes = describe_color(eyes_rgb)
+    hair = describe_color(hair_rgb)
+
+    skin_l = skin["lab"][0]
+    skin_v = skin["hsv"][2]
+
+    eyes_l = eyes["lab"][0]
+    eyes_v = eyes["hsv"][2]
+
+    hair_l = hair["lab"][0]
+    hair_v = hair["hsv"][2]
+
+    hsv_contrast = contrast(skin_v,eyes_v,hair_v)
+    lum_contratst= get_luminosity_contrast(skin_l,eyes_l,hair_l)
+
+    colors_relationships= {
+        "skin": skin,
+        "eyes": eyes,
+        "hair":hair,
+        "luminosity_contrast": {
+            "hsv": hsv_contrast,
+            "lab": lum_contratst
+        }
+    }
+
+    return colors_relationships
