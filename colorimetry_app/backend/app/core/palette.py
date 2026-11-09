@@ -114,6 +114,25 @@ def get_pairwise_value_differences(skin_v, eyes_v, hair_v) -> dict:
             
     return pairwise_value_differences
 
+def get_pairwise_chromaticity_differences(skin_c, eyes_c, hair_c) -> dict:
+    cont_chrom_skin_eyes= abs(skin_c-eyes_c)
+    cont_chrom_eyes_hair=abs(eyes_c-hair_c)
+    cont_chrom_skin_hair=abs(skin_c-hair_c)
+    
+    pairwise_chrom_differences = {
+        "skin_eyes": cont_chrom_skin_eyes,
+        "eyes_hair": cont_chrom_eyes_hair,
+        "skin_hair":cont_chrom_skin_hair,            
+        }
+                
+    return pairwise_chrom_differences
+
+def get_hue_angle_difference(h1: float, h2: float) -> float:
+
+    Calcular la diferencia absoluta.
+    Calcular la diferencia complementaria respecto de 360°.
+    Devolver la menor de las dos.
+
 def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[int, int, int], hair_rgb: tuple[int, int, int]) -> dict:
 
     skin = describe_color(skin_rgb)
@@ -122,18 +141,24 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
 
     skin_l = skin["lab"][0]
     skin_v = skin["hsv"][2]
+    skin_c= skin["chromaticity"]
 
     eyes_l = eyes["lab"][0]
     eyes_v = eyes["hsv"][2]
+    eyes_c = eyes["chromaticity"]
 
     hair_l = hair["lab"][0]
     hair_v = hair["hsv"][2]
+    hair_c = hair["chromaticity"]
+
+
 
     hsv_contrast = contrast(skin_v,eyes_v,hair_v)
-    lab_contrast= get_luminosity_contrast(skin_l,eyes_l,hair_l)
+    lab_contrast= get_luminosity_contrast(skin_l,eyes_l,hair_l)   
 
     pairwise_luminosity_differences= get_pairwise_luminosity_differences(skin_l, eyes_l, hair_l)
     pairwise_value_differences=get_pairwise_value_differences(skin_v, eyes_v, hair_v)
+    pairwise_chrom_differences = get_pairwise_chromaticity_differences(skin_c, eyes_c, hair_c)
 
     colors_relationships= {
         "skin": skin,
@@ -144,7 +169,8 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
             "lab": lab_contrast
         },
         "pairwise_luminosity_differences": pairwise_luminosity_differences,
-        "pairwise_value_differences": pairwise_value_differences
+        "pairwise_value_differences": pairwise_value_differences,
+        "pairwise_chrom_differences": pairwise_chrom_differences
     }
     return colors_relationships
 
