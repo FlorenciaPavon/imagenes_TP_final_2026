@@ -67,10 +67,43 @@ class RGBColor(BaseModel):
     g: int = Field(..., ge=0, le=255)
     b: int = Field(..., ge=0, le=255)
 
+class HSVColor(BaseModel):
+    h: float = Field(..., ge=0, le=1) #colorsys, trabaja con los tres componentes HSV en escala normalizada
+    s: float = Field(..., ge=0, le=1)
+    v: float = Field(..., ge=0, le=1)
+
+class LabColor(BaseModel):
+    l: float = Field(..., ge=0, le=100)
+    a: float = Field(..., ge=-128, le=127)# corresponden a la representación LAB de Pillow. Pillow tiene precisión limitada porque trabaja con canales de 8 bits. Por eso, los valores a* y b* son enteros, aunque los esten como float en Pydantic
+    b: float = Field(..., ge=-128, le=127)
+
+class AnalyzedColor(BaseModel):
+    rgb: RGBColor
+    hsv: HSVColor
+    lab: LabColor
+    chromaticity: float = Field(..., ge=0)
+    hue_angle: float = Field(..., ge=0, lt=360)  
+
 class ExtractedColors(BaseModel):
     skin: RGBColor
     eyes: RGBColor
-    hair: RGBColor
+    hair: RGBColor  
+
+class PairwiseDifferences(BaseModel):
+    skin_eyes: float = Field(..., ge=0)
+    eyes_hair: float = Field(..., ge=0)
+    skin_hair: float = Field(..., ge=0)
+
+class ColorDifferences(BaseModel):
+    luminosity: PairwiseDifferences
+    value: PairwiseDifferences
+    chromaticity: PairwiseDifferences
+    hue: PairwiseDifferences
+
+class GlobalContrast(BaseModel):
+    hsv: float = Field(..., ge=0, le=1)
+    lab: float = Field(..., ge=0, le=100)
+
 
 '''Muestra la paleta recomendada como resultado'''
 class Palette(BaseModel): #validamos que exista al menos un color. También se puede agregar una validación específica para asegurar que cada texto tenga formato hexadecimal
@@ -99,5 +132,5 @@ class ErrorDetail(BaseModel):
     message: str = Field(description="Message for the user") 
 
 class ErrorResponse(BaseModel):
-   """Body of all custom error responses."""
+    """Body of all custom error responses."""
     detail: ErrorDetail
