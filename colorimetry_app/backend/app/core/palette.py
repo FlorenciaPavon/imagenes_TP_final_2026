@@ -229,8 +229,3 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
     }
     return colors_relationships
 
-print(get_lab_chromaticity(-20, 0))
-
-#get_lab_chromaticity(0, 0)
-#get_lab_chromaticity(0, 20)
-#get_lab_chromaticity(-20, 0)
