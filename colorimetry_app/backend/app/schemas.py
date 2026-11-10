@@ -82,12 +82,7 @@ class AnalyzedColor(BaseModel):
     hsv: HSVColor
     lab: LabColor
     chromaticity: float = Field(..., ge=0)
-    hue_angle: float = Field(..., ge=0, lt=360)  
-
-class ExtractedColors(BaseModel):
-    skin: RGBColor
-    eyes: RGBColor
-    hair: RGBColor  
+    hue_angle: float = Field(..., ge=0, lt=360) 
 
 class PairwiseDifferences(BaseModel):
     skin_eyes: float = Field(..., ge=0)
@@ -104,29 +99,21 @@ class GlobalContrast(BaseModel):
     hsv: float = Field(..., ge=0, le=1)
     lab: float = Field(..., ge=0, le=100)
 
+class ColorRelationships(BaseModel):
+    skin: AnalyzedColor
+    eyes: AnalyzedColor
+    hair: AnalyzedColor
+    luminosity_contrast: GlobalContrast
+    pairwise_differences: ColorDifferences
 
-'''Muestra la paleta recomendada como resultado'''
 class Palette(BaseModel): #validamos que exista al menos un color. También se puede agregar una validación específica para asegurar que cada texto tenga formato hexadecimal
     name: str 
     colors: list[str] = Field(..., min_length=1) #### A MEJORAR
 
-'''Ej
-Palette(
-    name="Otoño suave",
-    colors=["#A66F50", "#C18C69", "#D5B68C"]
-)
-'''
-class ColorAnalysis(BaseModel):
-    temperature: Temperature
-    luminosity: Luminosity
-    contrast: Contrast   
-
-#respuesta provisoria de analisis
 class AnalysisResponse(BaseModel):
-    colors: ExtractedColors
-    analysis: ColorAnalysis
-    palette: Palette
-
+    analysis: ColorRelationships
+    palette: Palette 
+    
 class ErrorDetail(BaseModel):
     code: ErrorCode
     message: str = Field(description="Message for the user") 
@@ -134,3 +121,17 @@ class ErrorDetail(BaseModel):
 class ErrorResponse(BaseModel):
     """Body of all custom error responses."""
     detail: ErrorDetail
+
+
+    
+'''Ej
+Palette(
+    name="Otoño suave",
+    colors=["#A66F50", "#C18C69", "#D5B68C"]
+)
+
+#respuesta provisoria de analisis
+class AnalysisResponse(BaseModel):
+    colors: ExtractedColors
+    analysis: ColorAnalysis
+    palette: Palette'''
