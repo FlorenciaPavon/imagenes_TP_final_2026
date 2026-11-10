@@ -69,17 +69,3 @@ class ImageCodec:
 #    inspect(): recibe la imagen en bytes, intenta abrirla para verificar que sea una imagen válida y devuelve información sobre ella: formato, ancho y alto. No prepara la imagen para procesarla.
 #open(): también recibe los bytes, pero esta vez carga la imagen y la prepara para trabajar con sus píxeles. Para eso normaliza su modo de color a L, RGB o RGBA.
 
-
-'''
-PARECERIA QUE NO LA NECESITAMOS POR AHORA   
-    def encode(self, image: Image.Image, image_format: str) -> bytes:
-        """Encodes `image` in `image_format`, converting its color mode if that format
-        cannot store it (e.g. RGBA in JPEG)."""
-        if image_format == "JPEG" and image.mode not in ("L", "RGB"):
-            image = image.convert("RGB")
-        elif image.mode not in ("L", "RGB", "RGBA"):
-            image = image.convert("RGBA" if "A" in image.mode else "RGB")
-        buffer = BytesIO() 
-        image.save(buffer, format=image_format)
-        return buffer.getvalue()
-'''

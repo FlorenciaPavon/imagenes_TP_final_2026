@@ -227,5 +227,7 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
         "pairwise_chrom_differences": pairwise_chrom_differences,
         "pairwise_hue_differences": pairwise_hue_differences
     }
+
+    
     return colors_relationships
 

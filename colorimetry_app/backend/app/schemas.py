@@ -1,24 +1,5 @@
 """
 API contract 
-The structure is:
-
-AnalysisResponse
-colors
-Extracted colors from the original photo
-- skin
-- eyes
-- hair
-
-analysis
-Chromatic features
-- temperature
-- luminosity
-- contrast
-
-Palette
-recommended palette
-- name
-- colors
 """
 
 
@@ -105,6 +86,8 @@ class ColorRelationships(BaseModel):
     hair: AnalyzedColor
     luminosity_contrast: GlobalContrast
     pairwise_differences: ColorDifferences
+
+    
 
 class Palette(BaseModel): #validamos que exista al menos un color. También se puede agregar una validación específica para asegurar que cada texto tenga formato hexadecimal
     name: str 
