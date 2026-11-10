@@ -42,7 +42,7 @@ def get_lab_chromaticity(a: float, b: float) -> tuple[float, float]:
     list_crhom.append(c)
 
     # Degrees
-    h =math.degrees(math.atan2(a,b))  % 360
+    h = math.degrees(math.atan2(b, a)) % 360
     list_crhom.append(h)
 
     return tuple(list_crhom)
@@ -52,7 +52,7 @@ def describe_color(rgb: tuple[int, int, int]) -> dict:
     hsv= rgb_to_hsv(rgb)
     lab=rgb_to_lab(rgb)
 
-    l,a,b=rgb_to_lab(rgb)
+    l, a, b = lab
     c,h=get_lab_chromaticity(a,b)
 
     description = {
@@ -74,9 +74,6 @@ def contrast(skin_v, eyes_v, hair_v):
     contrast = v_max-v_min
 
     return contrast
-
-def classify_contrast():
-    pass
 
 def get_luminosity_contrast(skin_l: float, eyes_l: float, hair_l: float) -> float:
     l_max= max(skin_l, eyes_l, hair_l)
@@ -148,53 +145,7 @@ def get_pairwise_hue_differences(skin_h, eyes_h, hair_h) -> dict:
                     
     return pairwise_hue_differences
 
-  
-
-def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[int, int, int], hair_rgb: tuple[int, int, int]) -> dict:
-
-    skin = describe_color(skin_rgb)
-    eyes = describe_color(eyes_rgb)
-    hair = describe_color(hair_rgb)
-
-    skin_l = skin["lab"][0]
-    skin_v = skin["hsv"][2]
-    skin_c= skin["chromaticity"]
-    skin_h =skin["hue_angle"]
-
-    eyes_l = eyes["lab"][0]
-    eyes_v = eyes["hsv"][2]
-    eyes_c = eyes["chromaticity"]
-    eyes_h = eyes["hue_angle"]
-
-    hair_l = hair["lab"][0]
-    hair_v = hair["hsv"][2]
-    hair_c = hair["chromaticity"]
-    hair_h = hair["hue_angle"]
-
-    hsv_contrast = contrast(skin_v,eyes_v,hair_v)
-    lab_contrast= get_luminosity_contrast(skin_l,eyes_l,hair_l)   
-
-    pairwise_luminosity_differences= get_pairwise_luminosity_differences(skin_l, eyes_l, hair_l)
-    pairwise_value_differences=get_pairwise_value_differences(skin_v, eyes_v, hair_v)
-    pairwise_chrom_differences = get_pairwise_chromaticity_differences(skin_c, eyes_c, hair_c)
-    pairwise_hue_differences = get_pairwise_hue_differences(skin_h, eyes_h, hair_h)
-
-    colors_relationships= {
-        "skin": skin,
-        "eyes": eyes,
-        "hair":hair,
-        "luminosity_contrast": {
-            "hsv": hsv_contrast,
-            "lab": lab_contrast
-        },
-        "pairwise_luminosity_differences": pairwise_luminosity_differences,
-        "pairwise_value_differences": pairwise_value_differences,
-        "pairwise_chrom_differences": pairwise_chrom_differences,
-        "pairwise_hue_differences": pairwise_hue_differences
-    }
-    return colors_relationships
-
-def skin_values(a: float, b: float) -> dict:  
+def describe_lab_chromaticity(a: float, b: float) -> dict:  
     
     chromaticity = get_lab_chromaticity(a,b)
     calculated_angle = chromaticity[1]
@@ -215,15 +166,71 @@ def skin_values(a: float, b: float) -> dict:
         res_b = "No specific direction"
 
 
-    skin_value_details = {
-            "skin_a": a,
-            "skin_b": b,
+    lab_chromaticity_details = {
+            "a": a,
+            "b": b,
             "chromaticity": calculated_chromaticity,
             "a_direction": res_a,
             "b_direction": res_b,
-            "skin_chrom_angle": calculated_angle,            
+            "hue_angle": calculated_angle,            
             }
                     
-    return skin_value_details
+    return lab_chromaticity_details
+  
 
-print(skin_values(18, 19))
+def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[int, int, int], hair_rgb: tuple[int, int, int]) -> dict:
+    #individual colors
+    skin = describe_color(skin_rgb)
+    eyes = describe_color(eyes_rgb)
+    hair = describe_color(hair_rgb)
+    #chromatic descriptions
+    skin_chromaticity = describe_lab_chromaticity(skin["lab"][1], skin["lab"][2])
+    eyes_chromaticity = describe_lab_chromaticity(eyes["lab"][1], eyes["lab"][2])
+    hair_chromaticity = describe_lab_chromaticity(hair["lab"][1], hair["lab"][2])
+
+    skin_l = skin["lab"][0]
+    skin_v = skin["hsv"][2]
+    skin_c= skin["chromaticity"] 
+    skin_h =skin["hue_angle"]
+
+    eyes_l = eyes["lab"][0]
+    eyes_v = eyes["hsv"][2]
+    eyes_c = eyes["chromaticity"]
+    eyes_h = eyes["hue_angle"]
+
+    hair_l = hair["lab"][0]
+    hair_v = hair["hsv"][2]
+    hair_c = hair["chromaticity"]
+    hair_h = hair["hue_angle"]
+
+    # contrasts and differences
+    hsv_contrast = contrast(skin_v,eyes_v,hair_v)
+    lab_contrast= get_luminosity_contrast(skin_l,eyes_l,hair_l)
+    pairwise_luminosity_differences= get_pairwise_luminosity_differences(skin_l, eyes_l, hair_l)
+    pairwise_value_differences=get_pairwise_value_differences(skin_v, eyes_v, hair_v)
+    pairwise_chrom_differences = get_pairwise_chromaticity_differences(skin_c, eyes_c, hair_c)
+    pairwise_hue_differences = get_pairwise_hue_differences(skin_h, eyes_h, hair_h)
+
+    colors_relationships= {
+        "skin": skin,
+        "eyes": eyes,
+        "hair":hair,
+        "skin_chromaticity": skin_chromaticity,
+        "eyes_chromaticity": eyes_chromaticity,
+        "hair_chromaticity": hair_chromaticity,
+        "luminosity_contrast": {
+            "hsv": hsv_contrast,
+            "lab": lab_contrast
+        },
+        "pairwise_luminosity_differences": pairwise_luminosity_differences,
+        "pairwise_value_differences": pairwise_value_differences,
+        "pairwise_chrom_differences": pairwise_chrom_differences,
+        "pairwise_hue_differences": pairwise_hue_differences
+    }
+    return colors_relationships
+
+print(get_lab_chromaticity(-20, 0))
+
+#get_lab_chromaticity(0, 0)
+#get_lab_chromaticity(0, 20)
+#get_lab_chromaticity(-20, 0)
