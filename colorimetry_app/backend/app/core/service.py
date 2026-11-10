@@ -3,10 +3,11 @@ Use cases of the application: image analysis.
 
 """
 
-from app import config
+#from app import config
 from app.core.exceptions import UnsupportedFormat, InvalidCoordinates
 from app.core.imaging import ImageCodec
-from app.schemas import Selections, AnalysisResponse, ExtractedColors, RGBColor
+from app.schemas import Selections, AnalysisResponse
+from app.core.palette import analyze_color_relationships
 from app.core.operations import get_representative_color
 
 
@@ -39,10 +40,11 @@ class AnalysisService:
 
         hair_color = get_representative_color(image, selections.hair.x, selections.hair.y)
 
-        extracted_colors = ExtractedColors(
-            skin=RGBColor(*skin_color),
-            eyes=RGBColor(*eyes_color),
-            hair=RGBColor(*hair_color)
-        )
+        color_relationships = analyze_color_relationships(skin_color, eyes_color,hair_color) 
 
-        return extracted_colors #a cambiar mas tarde, el return debe ser AnalysisResponse
+        print(color_relationships.keys())
+
+        return color_relationships #a cambiar mas tarde, el return debe ser AnalysisResponse
+
+
+print(AnalysisService.analyze)
