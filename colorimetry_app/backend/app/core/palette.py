@@ -148,8 +148,7 @@ def get_pairwise_hue_differences(skin_h, eyes_h, hair_h) -> dict:
                     
     return pairwise_hue_differences
 
-
-    
+  
 
 def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[int, int, int], hair_rgb: tuple[int, int, int]) -> dict:
 
@@ -195,4 +194,36 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
     }
     return colors_relationships
 
+def skin_values(a: float, b: float) -> dict:  
+    
+    chromaticity = get_lab_chromaticity(a,b)
+    calculated_angle = chromaticity[1]
+    calculated_chromaticity=chromaticity[0]
 
+    if a > 0:
+        res_a = "Red trend"
+    elif a < 0:
+        res_a = "Green trend"
+    else:
+        res_a = "No specific direction"
+
+    if b > 0:
+        res_b = "Yellow trend"
+    elif b < 0:
+        res_b = "Blue trend"
+    else: 
+        res_b = "No specific direction"
+
+
+    skin_value_details = {
+            "skin_a": a,
+            "skin_b": b,
+            "chromaticity": calculated_chromaticity,
+            "a_direction": res_a,
+            "b_direction": res_b,
+            "skin_chrom_angle": calculated_angle,            
+            }
+                    
+    return skin_value_details
+
+print(skin_values(18, 19))
