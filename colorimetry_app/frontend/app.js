@@ -143,7 +143,7 @@ analyzeButton.addEventListener("click", async function () {
             );
         }
 
-        analysisResult.textContent = JSON.stringify(result, null, 2);
+        renderAnalysis(result);
 
         console.log("Resultado del análisis:", result);
 
@@ -155,3 +155,74 @@ analyzeButton.addEventListener("click", async function () {
         analyzeButton.disabled = false;
     }
 });
+
+function renderAnalysis(result) {
+    const analysis = result.analysis;
+
+    const colors = [
+        {
+            name: "Piel",
+            data: analysis.skin
+        },
+        {
+            name: "Ojos",
+            data: analysis.eyes
+        },
+        {
+            name: "Cabello",
+            data: analysis.hair
+        }
+    ];
+
+    analysisResult.innerHTML = `
+        <h2 class="results-title">Tu análisis de color</h2>
+
+        <h3>Colores identificados</h3>
+
+        <div class="color-grid">
+            ${colors.map(color => {
+                const { r, g, b } = color.data.rgb;
+
+                const hex = "#" +
+                    [r, g, b]
+                    .map(value => value.toString(16).padStart(2, "0"))
+                    .join("")
+                    .toUpperCase();
+
+                return `
+                    <div class="color-card">
+                        <div
+                            class="color-sample"
+                            style="background-color: ${hex}">
+                        </div>
+
+                        <h3>${color.name}</h3>
+                        <p class="color-hex">${hex}</p>
+                    </div>
+                `;
+            }).join("")}
+        </div>
+
+        <div class="contrast-section">
+            <h3>Contraste de luminosidad</h3>
+
+            <p>HSV: ${(analysis.luminosity_contrast.hsv * 100).toFixed(2)}%</p>
+
+            <div class="contrast-bar">
+                <div
+                    class="contrast-fill"
+                    style="width: ${analysis.luminosity_contrast.hsv * 100}%">
+                </div>
+            </div>
+
+            <p>LAB: ${analysis.luminosity_contrast.lab.toFixed(2)} / 100</p>
+
+            <div class="contrast-bar">
+                <div
+                    class="contrast-fill"
+                    style="width: ${analysis.luminosity_contrast.lab}%">
+                </div>
+            </div>
+        </div>
+    `;
+}

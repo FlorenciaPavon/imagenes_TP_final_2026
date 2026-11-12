@@ -231,3 +231,23 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
     
     return colors_relationships
 
+
+def classify_luminosity(l_value):
+    if l_value <= 60.33:
+        return "dark"
+    elif l_value <= 64.32:
+        return "medium"
+    else:
+        return "light"
+'''
+Se establecieron umbrales exploratorios para clasificar la luminosidad y la cromaticidad de la piel mediante los percentiles 33 y 
+67 de una muestra de 150 sujetos con mediciones disponibles en cuatro zonas faciales. Se utilizaron criterios globales, sin diferenciar 
+la zona de selección. Los valores obtenidos se consideran referencias iniciales y no estándares universales de colorimetría personal.'''
+
+def classify_chromaticity(c_value):
+    if c_value <= 20.04:
+        return "soft"
+    elif c_value <= 22.05:
+        return "medium"
+    else:
+        return "intense"

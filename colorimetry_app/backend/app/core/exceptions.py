@@ -18,26 +18,6 @@ class DomainError(Exception):
     def to_detail(self) -> dict[str, str]:
         return {"code": self.code, "message": self.message}
 
-'''NOT IMPLEMENTED NO SIRVE POR AHORA
-class NotImplementedFeature(DomainError):
-    code = "NOT_IMPLEMENTED"
-
-    def __init__(self, feature: str) -> None:
-        super().__init__(f"The feature '{feature}' has not been implemented yet.")
-        self.feature = feature
-
-    def to_detail(self) -> dict[str, str]:
-        return {**super().to_detail(), "feature": self.feature}
-
-IMAGE NOT FOUND HAY QUE CHECKEAR 
-class ImageNotFound(DomainError):
-    code = "IMAGE_NOT_FOUND"
-
-    def __init__(self, image_id: int) -> None:
-        super().__init__(f"There is no image with id {image_id}.")
-        self.image_id = image_id
-
-'''
 class InvalidParameters(DomainError):
     code = "INVALID_PARAMETERS"
 
