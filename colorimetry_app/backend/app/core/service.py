@@ -4,6 +4,8 @@ Use cases of the application: image analysis.
 """
 
 from app import config
+from app.core.palettes_colors import SEASON_PALETTES
+
 
 from app.core.imaging import ImageCodec
 from app.schemas import (
@@ -104,7 +106,19 @@ class AnalysisService:
             ),
             pairwise_differences=ColorDifferences(**pairwise_differences)
         )
+        season = color_relationships["season"]
 
+        palette = Palette(
+            name=season,
+            colors=SEASON_PALETTES[season],
+        )
+    
+        return AnalysisResponse(
+            analysis=relationships,
+            palette=palette
+        )
+
+'''
         palette = Palette(
             name="Colores analizados",
             colors=[
@@ -112,8 +126,4 @@ class AnalysisService:
                 f"#{relationships.eyes.rgb.r:02X}{relationships.eyes.rgb.g:02X}{relationships.eyes.rgb.b:02X}",
                 f"#{relationships.hair.rgb.r:02X}{relationships.hair.rgb.g:02X}{relationships.hair.rgb.b:02X}"
             ]
-)
-        return AnalysisResponse(
-            analysis=relationships,
-            palette=palette
-        )
+)'''

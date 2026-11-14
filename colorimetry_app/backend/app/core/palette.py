@@ -181,12 +181,35 @@ def describe_lab_chromaticity(a: float, b: float) -> dict:
                     
     return lab_chromaticity_details
   
+def classify_season(skin: dict, eyes: dict, hair: dict) -> str:
+    """Clasificación inicial y orientativa en una de las cuatro estaciones."""
+    skin_l, skin_a, skin_b = skin["lab"]
+
+    # Aproximación exploratoria: no determina la temperatura de forma fiable.
+    is_warm = skin_b >= skin_a
+    is_light = skin["luminosity_category"] == "light"
+    is_bright = skin["chromaticity_category"] == "intense"
+
+    # Ojos y cabello aportan contraste, pero la piel sigue siendo la referencia.
+    luminosities = (skin_l, eyes["lab"][0], hair["lab"][0])
+    contrast = max(luminosities) - min(luminosities)
+    has_high_contrast = contrast >= 20.0  # Umbral inicial para calibrar con pruebas.
+
+    if is_warm:
+        if is_light and (is_bright or has_high_contrast):
+            return "Primavera"
+        return "Otoño"
+
+    if is_light and not (is_bright or has_high_contrast):
+        return "Verano"
+    return "Invierno"
 
 def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[int, int, int], hair_rgb: tuple[int, int, int]) -> dict:
     #individual colors
     skin = describe_color(skin_rgb)
     eyes = describe_color(eyes_rgb)
     hair = describe_color(hair_rgb)
+    season = classify_season(skin, eyes, hair)
     #chromatic descriptions
     skin_chromaticity = describe_lab_chromaticity(skin["lab"][1], skin["lab"][2])
     eyes_chromaticity = describe_lab_chromaticity(eyes["lab"][1], eyes["lab"][2])
@@ -229,7 +252,8 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
         "pairwise_luminosity_differences": pairwise_luminosity_differences,
         "pairwise_value_differences": pairwise_value_differences,
         "pairwise_chrom_differences": pairwise_chrom_differences,
-        "pairwise_hue_differences": pairwise_hue_differences
+        "pairwise_hue_differences": pairwise_hue_differences,
+        "season": season
     }
 
     
