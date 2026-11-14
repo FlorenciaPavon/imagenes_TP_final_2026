@@ -155,9 +155,13 @@ analyzeButton.addEventListener("click", async function () {
         analyzeButton.disabled = false;
     }
 });
+console.log("RESPUESTA COMPLETA:", result);
 
 function renderAnalysis(result) {
     const analysis = result.analysis;
+
+    console.log("Categoría luminosidad ojos:", analysis.eyes.luminosity_category);
+    console.log("Categoría cromaticidad ojos:", analysis.eyes.chromaticity_category);
 
     const colors = [
         {
@@ -174,6 +178,19 @@ function renderAnalysis(result) {
         }
     ];
 
+    // Traducción de las categorías del backend
+    const luminosityLabels = {
+        light: "Clara",
+        medium: "Media",
+        dark: "Oscura"
+    };
+
+    const chromaticityLabels = {
+        soft: "Suave",
+        medium: "Media",
+        intense: "Intensa"
+    };
+
     analysisResult.innerHTML = `
         <h2 class="results-title">Tu análisis de color</h2>
 
@@ -189,15 +206,42 @@ function renderAnalysis(result) {
                     .join("")
                     .toUpperCase();
 
+                const luminosity =
+                    luminosityLabels[color.data.luminosity_category];
+
+                const chromaticity =
+                    chromaticityLabels[color.data.chromaticity_category];
+
+                console.log(color.name, {
+                    luminosity,
+                    chromaticity
+                });
+
                 return `
                     <div class="color-card">
+
                         <div
                             class="color-sample"
                             style="background-color: ${hex}">
                         </div>
 
                         <h3>${color.name}</h3>
+
                         <p class="color-hex">${hex}</p>
+
+                        <div class="color-characteristics">
+
+                            <p>
+                                <strong>Luminosidad:</strong>
+                                ${luminosity || "Sin clasificar"}
+                            </p>
+
+                            <p>
+                                <strong>Cromaticidad:</strong>
+                                ${chromaticity || "Sin clasificar"}
+                            </p>
+
+                        </div>
                     </div>
                 `;
             }).join("")}

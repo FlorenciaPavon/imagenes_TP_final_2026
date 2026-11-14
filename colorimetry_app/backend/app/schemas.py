@@ -22,6 +22,8 @@ Temperature = Literal["warm", "cool", "neutral"] #Literal restringe los valores 
 
 Luminosity = Literal["light", "medium", "dark"]
 
+Chromaticity = Literal["soft", "medium", "intense"]
+
 Contrast = Literal["low", "medium", "high"]
 
 class PointSelection(BaseModel):#permite que Pydantic valide los datos.
@@ -64,6 +66,8 @@ class AnalyzedColor(BaseModel):
     lab: LabColor
     chromaticity: float = Field(..., ge=0)
     hue_angle: float = Field(..., ge=0, lt=360) 
+    luminosity_category: Luminosity
+    chromaticity_category: Chromaticity
 
 class PairwiseDifferences(BaseModel):
     skin_eyes: float = Field(..., ge=0)

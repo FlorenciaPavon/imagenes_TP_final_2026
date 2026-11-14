@@ -44,8 +44,11 @@ def _build_analyzed_color(color_data: dict) -> AnalyzedColor:
             b=color_data["lab"][2]
         ),
         chromaticity=color_data["chromaticity"],
-        hue_angle=color_data["hue_angle"]
+        hue_angle=color_data["hue_angle"],
+        luminosity_category=color_data["luminosity_category"],
+        chromaticity_category=color_data["chromaticity_category"]
     )
+    
 
     return analyzed
 

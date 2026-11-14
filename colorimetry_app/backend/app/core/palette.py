@@ -54,13 +54,17 @@ def describe_color(rgb: tuple[int, int, int]) -> dict:
 
     l, a, b = lab
     c,h=get_lab_chromaticity(a,b)
+    luminosity_category = classify_luminosity(l)
+    chromaticity_category = classify_chromaticity(c)
 
     description = {
         "rgb": rgb,
         "hsv": hsv,
         "lab": lab,
         "chromaticity": c,
-        "hue_angle": h
+        "hue_angle": h,
+        "luminosity_category": luminosity_category,
+        "chromaticity_category": chromaticity_category
     }
 
     return description
