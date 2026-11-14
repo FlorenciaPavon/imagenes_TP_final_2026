@@ -155,7 +155,6 @@ analyzeButton.addEventListener("click", async function () {
         analyzeButton.disabled = false;
     }
 });
-console.log("RESPUESTA COMPLETA:", result);
 
 function renderAnalysis(result) {
     const analysis = result.analysis;
@@ -194,6 +193,19 @@ function renderAnalysis(result) {
     analysisResult.innerHTML = `
         <h2 class="results-title">Tu análisis de color</h2>
 
+        <h3>Paleta recomendada: ${result.palette.name}</h3>
+
+        <div class="color-grid">
+            ${result.palette.colors.map(color => `
+                <div class="color-card">
+                    <div
+                        class="color-sample"
+                        style="background-color: ${color}">
+                    </div>
+                    <p class="color-hex">${color}</p>
+                </div>
+            `).join("")}
+        </div>
         <h3>Colores identificados</h3>
 
         <div class="color-grid">

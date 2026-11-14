@@ -160,3 +160,16 @@ h1, h2 {
     margin: 8px 0;
     color: #333333;
 }
+
+.palette-grid {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+}
+
+.palette-grid .color-card {
+    padding: 10px;
+    text-align: center;
+}
+
+.palette-grid .color-sample {
+    height: 70px;
+}
