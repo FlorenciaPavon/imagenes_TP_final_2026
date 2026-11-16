@@ -5,8 +5,24 @@ const placeholder = document.getElementById("placeholder");
 const imageWrapper = document.getElementById("imageWrapper");
 const markers = document.getElementById("markers");
 const selectionStatus = document.getElementById("selectionStatus");
+const analyzeButton = document.getElementById("analyzeButton");
+const analysisResult = document.getElementById("analysisResult");
+const partButtons = [...document.querySelectorAll("[data-part]")];
+
+const partLabels = {
+    skin: "Piel",
+    eyes: "Ojos",
+    hair: "Cabello"
+};
+
+const markerColors = {
+    skin: "#D99777",
+    eyes: "#5485A6",
+    hair: "#4A403A"
+};
 
 let selectedPart = null;
+let previewURL = null;
 
 const selections = {
     skin: null,
@@ -14,17 +30,51 @@ const selections = {
     hair: null
 };
 
+imagePreview.addEventListener("load", function () {
+    imageWrapper.hidden = false;
+    placeholder.hidden = true;
+    partButtons.forEach(button => {
+        button.disabled = false;
+    });
+    selectionStatus.textContent = "Elegí piel, ojos y cabello para marcar sus puntos.";
+});
+
+imagePreview.addEventListener("error", function () {
+    if (!previewURL) return;
+
+    URL.revokeObjectURL(previewURL);
+    previewURL = null;
+    imageInput.value = "";
+    imageWrapper.hidden = true;
+    placeholder.hidden = false;
+    placeholder.textContent = "No se pudo cargar esa imagen. Probá con otro archivo.";
+    partButtons.forEach(button => {
+        button.disabled = true;
+    });
+    selectionStatus.textContent = "No se pudo cargar la fotografía.";
+    updateAnalyzeButton();
+});
+
+function updateAnalyzeButton() {
+    analyzeButton.disabled = !imageInput.files[0] ||
+        !selections.skin ||
+        !selections.eyes ||
+        !selections.hair;
+}
+
 // Cargar fotografía
 imageInput.addEventListener("change", function () {
     const file = imageInput.files[0];
 
     if (!file) return;
 
-    const imageURL = URL.createObjectURL(file);
+    if (previewURL) URL.revokeObjectURL(previewURL);
+    previewURL = URL.createObjectURL(file);
 
-    imagePreview.src = imageURL;
-    imagePreview.style.display = "block";
-    placeholder.style.display = "none";
+    imagePreview.src = previewURL;
+    imageWrapper.hidden = true;
+    placeholder.hidden = false;
+    placeholder.textContent = "Cargando fotografía...";
 
     selections.skin = null;
     selections.eyes = null;
@@ -32,21 +82,35 @@ imageInput.addEventListener("change", function () {
 
     markers.innerHTML = "";
     selectedPart = null;
-    selectionStatus.textContent = "Elegí qué punto querés seleccionar.";
+    partButtons.forEach(button => {
+        button.disabled = true;
+        button.setAttribute("aria-pressed", "false");
+    });
+    analysisResult.hidden = true;
+    analysisResult.textContent = "";
+    updateAnalyzeButton();
+    selectionStatus.textContent = "Cargando la fotografía...";
 });
 
 // Elegir qué característica seleccionar
-document.querySelectorAll("[data-part]").forEach(button => {
+partButtons.forEach(button => {
     button.addEventListener("click", function () {
         selectedPart = this.dataset.part;
 
+        partButtons.forEach(partButton => {
+            partButton.setAttribute(
+                "aria-pressed",
+                String(partButton === this)
+            );
+        });
+
         selectionStatus.textContent =
-            `Ahora hacé clic sobre la zona de ${selectedPart}.`;
+            `Ahora hacé clic sobre la zona de ${partLabels[selectedPart].toLowerCase()}.`;
     });
 });
 
 // Seleccionar punto sobre la fotografía
-imagePreview.addEventListener("click", function (event) {
+imageWrapper.addEventListener("click", function (event) {
     if (!selectedPart) {
         selectionStatus.textContent =
             "Primero elegí piel, ojos o cabello.";
@@ -55,31 +119,26 @@ imagePreview.addEventListener("click", function (event) {
 
     const rect = imagePreview.getBoundingClientRect();
 
-    const x = Math.round(
+    const x = Math.max(0, Math.min(imagePreview.naturalWidth - 1, Math.floor(
         (event.clientX - rect.left) *
         imagePreview.naturalWidth / rect.width
-    );
+    )));
 
-    const y = Math.round(
+    const y = Math.max(0, Math.min(imagePreview.naturalHeight - 1, Math.floor(
         (event.clientY - rect.top) *
         imagePreview.naturalHeight / rect.height
-    );
+    )));
 
     selections[selectedPart] = { x, y };
 
-    // Crear marcador visual
     const marker = document.createElement("div");
     marker.className = "marker";
     marker.style.left = `${(x / imagePreview.naturalWidth) * 100}%`;
     marker.style.top = `${(y / imagePreview.naturalHeight) * 100}%`;
+    marker.style.backgroundColor = markerColors[selectedPart];
+    marker.dataset.label = partLabels[selectedPart];
+    marker.setAttribute("aria-label", partLabels[selectedPart]);
 
-    marker.style.backgroundColor = {
-        skin: "#E8A080",
-        eyes: "#3985D6",
-        hair: "#333333"
-    }[selectedPart];
-
-    // Reemplazar marcador anterior de esa característica
     const oldMarker = markers.querySelector(
         `[data-marker="${selectedPart}"]`
     );
@@ -90,9 +149,11 @@ imagePreview.addEventListener("click", function (event) {
     markers.appendChild(marker);
 
     selectionStatus.textContent =
-        `${selectedPart}: x=${x}, y=${y}`;
+        `${partLabels[selectedPart]}: punto marcado (x=${x}, y=${y}).`;
 
     selectedPart = null;
+    partButtons.forEach(button => button.setAttribute("aria-pressed", "false"));
+    updateAnalyzeButton();
 });
 
 // Consultar coordenadas desde la consola
@@ -101,31 +162,28 @@ window.getSelections = function () {
 };
 
 
-const analyzeButton = document.getElementById("analyzeButton");
-const analysisResult = document.getElementById("analysisResult");
-
 analyzeButton.addEventListener("click", async function () {
     const file = imageInput.files[0];
 
-    // Verificar que haya una fotografía
     if (!file) {
+        analysisResult.hidden = false;
         analysisResult.textContent = "Primero cargá una fotografía.";
         return;
     }
 
-    // Verificar que estén seleccionados los tres puntos
     if (!selections.skin || !selections.eyes || !selections.hair) {
+        analysisResult.hidden = false;
         analysisResult.textContent =
             "Tenés que seleccionar piel, ojos y cabello.";
         return;
     }
 
-    // Preparar los datos para enviar
     const formData = new FormData();
 
     formData.append("file", file);
     formData.append("selections_json", JSON.stringify(selections));
 
+    analysisResult.hidden = false;
     analysisResult.textContent = "Analizando fotografía...";
     analyzeButton.disabled = true;
 
@@ -135,7 +193,12 @@ analyzeButton.addEventListener("click", async function () {
             body: formData
         });
 
-        const result = await response.json();
+        let result;
+        try {
+            result = await response.json();
+        } catch {
+            throw new Error("El servidor devolvió una respuesta que no se pudo leer.");
+        }
 
         if (!response.ok) {
             throw new Error(
@@ -144,23 +207,19 @@ analyzeButton.addEventListener("click", async function () {
         }
 
         renderAnalysis(result);
-
-        console.log("Resultado del análisis:", result);
-
     } catch (error) {
-        analysisResult.textContent = error.message;
-        console.error("Error:", error);
+        analysisResult.textContent =
+            error instanceof Error
+                ? error.message
+                : "No se pudo analizar la fotografía.";
 
     } finally {
-        analyzeButton.disabled = false;
+        updateAnalyzeButton();
     }
 });
 
 function renderAnalysis(result) {
     const analysis = result.analysis;
-
-    console.log("Categoría luminosidad ojos:", analysis.eyes.luminosity_category);
-    console.log("Categoría cromaticidad ojos:", analysis.eyes.chromaticity_category);
 
     const colors = [
         {
@@ -193,11 +252,11 @@ function renderAnalysis(result) {
     analysisResult.innerHTML = `
         <h2 class="results-title">Tu análisis de color</h2>
 
-        <h3>Paleta recomendada: ${result.palette.name}</h3>
+        <h3 class="result-section-heading">Paleta recomendada: ${result.palette.name}</h3>
 
-        <div class="color-grid">
+        <div class="palette-grid">
             ${result.palette.colors.map(color => `
-                <div class="color-card">
+                <div class="color-card palette-card">
                     <div
                         class="color-sample"
                         style="background-color: ${color}">
@@ -206,7 +265,7 @@ function renderAnalysis(result) {
                 </div>
             `).join("")}
         </div>
-        <h3>Colores identificados</h3>
+        <h3 class="result-section-heading">Colores identificados</h3>
 
         <div class="color-grid">
             ${colors.map(color => {
@@ -223,11 +282,6 @@ function renderAnalysis(result) {
 
                 const chromaticity =
                     chromaticityLabels[color.data.chromaticity_category];
-
-                console.log(color.name, {
-                    luminosity,
-                    chromaticity
-                });
 
                 return `
                     <div class="color-card">

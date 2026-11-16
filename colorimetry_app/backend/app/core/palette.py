@@ -2,6 +2,12 @@ import colorsys
 from PIL import Image
 import math
 
+'''
+El calculo de umbrales de luminosidad y cromaticidad se hizo teniendo en cuenta el archivo Skin Database 1-92-xlsx obtenido desde https://cie.co.at/technicalcommittees/skin-colour-database
+corresponde al origen 1 (UK) y las ubicaciones 2 (mejilla), 3 (pómulo), 4 (mentón) y 6 (frente): 150 sujetos, una medición por sujeto en cada zona, 600 registros en total. Los percentiles están agrupados entre las cuatro zonas, no calculados por separado.
+se usaron los percentiles 33,33 y 66,67, con interpolación lineal y redondeo a dos decimales
+'''
+
 
 def rgb_to_hsv(rgb: tuple[int, int, int]) -> tuple[float, float, float]:   
     """

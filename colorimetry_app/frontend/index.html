@@ -1,60 +1,109 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Análisis de colorimetría</title>
+    <meta name="theme-color" content="#f5f1eb">
+    <title>Análisis de colorimetría personal</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="page-shell">
+        <header class="page-header">
+            <p class="eyebrow">COLORIMETRÍA PERSONAL</p>
+            <h1>Descubrí los colores que hablan de vos</h1>
+            <p class="page-intro">
+                Cargá una foto, marcá tres puntos y explorá una paleta inspirada en tus colores.
+            </p>
+        </header>
 
-    <main class="container">
-        <h1>Análisis de colorimetría</h1>
-        <p>Cargá una fotografía para comenzar el análisis.</p>
+        <main class="app-layout">
+            <section class="panel upload-panel" aria-labelledby="uploadTitle">
+                <div class="panel-heading">
+                    <span class="step-number" aria-hidden="true">01</span>
+                    <div>
+                        <h2 id="uploadTitle">Empezá con tu foto</h2>
+                        <p>Usá una imagen con buena luz y el rostro visible.</p>
+                    </div>
+                </div>
 
-        <section class="upload-section">
-            <label for="imageInput">Seleccionar fotografía:</label>
-            <input
-                type="file"
-                id="imageInput"
-                accept="image/png, image/jpeg, image/webp, image/bmp"
-            >
-        </section>        
-    </main>
+                <input
+                    class="file-input"
+                    type="file"
+                    id="imageInput"
+                    accept="image/png, image/jpeg, image/webp, image/bmp"
+                >
+                <label class="upload-control" for="imageInput">
+                    <span class="upload-icon" aria-hidden="true">+</span>
+                    <span class="upload-copy">
+                        <strong>Elegir una fotografía</strong>
+                        <span>JPG, PNG, WEBP o BMP · hasta 10 MB</span>
+                    </span>
+                </label>
+            </section>
 
-<section class="preview-section">
-    <h2>Vista previa</h2>
+            <section class="panel preview-panel" aria-labelledby="previewTitle">
+                <div class="panel-heading">
+                    <span class="step-number" aria-hidden="true">02</span>
+                    <div>
+                        <h2 id="previewTitle">Tu fotografía</h2>
+                        <p>Los puntos de color aparecen sobre la imagen.</p>
+                    </div>
+                </div>
 
-    <div id="imageContainer">
-        <p id="placeholder">Todavía no seleccionaste una imagen.</p>
+                <div id="imageContainer" class="image-container">
+                    <p id="placeholder" class="placeholder">
+                        Tu imagen va a aparecer acá.
+                    </p>
+                    <div id="imageWrapper" class="image-wrapper" hidden>
+                        <img id="imagePreview" alt="Fotografía seleccionada para el análisis">
+                        <div id="markers" aria-hidden="true"></div>
+                    </div>
+                </div>
+            </section>
 
-        <div id="imageWrapper">
-            <img id="imagePreview" alt="Fotografía seleccionada">
-            <div id="markers"></div>
-        </div>
+            <section class="panel selection-panel" aria-labelledby="selectionTitle">
+                <div class="panel-heading">
+                    <span class="step-number" aria-hidden="true">03</span>
+                    <div>
+                        <h2 id="selectionTitle">Marcá tus colores</h2>
+                        <p>Elegí una característica y hacé clic en la zona correspondiente.</p>
+                    </div>
+                </div>
+
+                <div class="selection-buttons" role="group" aria-label="Característica para seleccionar">
+                    <button type="button" class="part-button" data-part="skin" aria-pressed="false" disabled>
+                        <span class="part-swatch skin-swatch" aria-hidden="true"></span>
+                        Piel
+                    </button>
+                    <button type="button" class="part-button" data-part="eyes" aria-pressed="false" disabled>
+                        <span class="part-swatch eyes-swatch" aria-hidden="true"></span>
+                        Ojos
+                    </button>
+                    <button type="button" class="part-button" data-part="hair" aria-pressed="false" disabled>
+                        <span class="part-swatch hair-swatch" aria-hidden="true"></span>
+                        Cabello
+                    </button>
+                </div>
+
+                <p id="selectionStatus" class="selection-status" role="status" aria-live="polite">
+                    Primero cargá una fotografía para empezar.
+                </p>
+
+                <button type="button" id="analyzeButton" class="primary-button" disabled>
+                    Analizar mis colores
+                    <span aria-hidden="true">→</span>
+                </button>
+            </section>
+
+            <section id="analysisResult" class="panel analysis-result" aria-live="polite" hidden>
+            </section>
+        </main>
+
+        <footer class="page-footer">
+            <p>Resultado orientativo: la luz y la calidad de la fotografía pueden influir en el análisis.</p>
+        </footer>
     </div>
-</section>
-
-<section class="selection-section">
-    <h2>Seleccionar colores</h2>
-
-    <p>Elegí una característica y luego hacé clic sobre la fotografía.</p>
-
-    <button type="button" data-part="skin">Seleccionar piel</button>
-    <button type="button" data-part="eyes">Seleccionar ojos</button>
-    <button type="button" data-part="hair">Seleccionar cabello</button>
-
-    <p id="selectionStatus">Todavía no seleccionaste ningún punto.</p>
-</section>
-
-
-<button type="button" id="analyzeButton">
-    Analizar fotografía
-</button>
-
-<section id="analysisResult" class="analysis-result" aria-live="polite">
-</section>
 
     <script src="app.js"></script>
 </body>
