@@ -76,8 +76,6 @@ class AnalyzedColor(BaseModel):
     lab: LabColor
     chromaticity: float = Field(..., ge=0)
     hue_angle: float = Field(..., ge=0, lt=360) 
-    luminosity_category: Luminosity
-    chromaticity_category: Chromaticity
 
 class PairwiseDifferences(BaseModel):
     skin_eyes: float = Field(..., ge=0)

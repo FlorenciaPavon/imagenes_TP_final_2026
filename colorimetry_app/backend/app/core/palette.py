@@ -1,7 +1,6 @@
 import colorsys
 from PIL import Image
 import math
-from statistics import median
 
 '''
 El calculo de umbrales de luminosidad y cromaticidad se hizo teniendo en cuenta el archivo Skin Database 1-92-xlsx obtenido desde https://cie.co.at/technicalcommittees/skin-colour-database
@@ -61,8 +60,6 @@ def describe_color(rgb: tuple[int, int, int]) -> dict:
 
     l, a, b = lab
     c,h=get_lab_chromaticity(a,b)
-    luminosity_category = classify_luminosity(l)
-    chromaticity_category = classify_chromaticity(c)
 
     description = {
         "rgb": rgb,
@@ -70,8 +67,6 @@ def describe_color(rgb: tuple[int, int, int]) -> dict:
         "lab": lab,
         "chromaticity": c,
         "hue_angle": h,
-        "luminosity_category": luminosity_category,
-        "chromaticity_category": chromaticity_category
     }
 
     return description
@@ -189,17 +184,7 @@ def describe_lab_chromaticity(a: float, b: float) -> dict:
     return lab_chromaticity_details
   
 def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
-    colors = (skin, eyes, hair)
-
-    lightness_values = [color["lab"][0] for color in colors]
-    chromaticity_values = [color["chromaticity"] for color in colors]
-
-    luminosity = classify_luminosity(median(lightness_values))
-    chromaticity = classify_chromaticity(median(chromaticity_values))
-
-    skin_a = skin["lab"][1]
-    skin_b = skin["lab"][2]
-    temperature_delta = skin_b - skin_a
+    temperature_delta = skin["lab"][2] - skin["lab"][1]
 
     if temperature_delta == 0:
         temperature = "undetermined"
@@ -207,6 +192,9 @@ def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
         temperature = "warm"
     else:
         temperature = "cool"
+
+    luminosity = classify_luminosity(skin["lab"][0])
+    chromaticity = classify_chromaticity(skin["chromaticity"])
 
     profiles = {
         ("warm", "light", "intense"): "Primavera",
@@ -219,42 +207,21 @@ def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
         "No determinada",
     )
 
-    luminosity_votes = sum(
-        color["luminosity_category"] == luminosity for color in colors
-    )
-    chromaticity_votes = sum(
-        color["chromaticity_category"] == chromaticity for color in colors
-    )
+    lightness_values = [
+        skin["lab"][0],
+        eyes["lab"][0],
+        hair["lab"][0],
+    ]
+    high_contrast = max(lightness_values) - min(lightness_values) >= 20
+    expects_high_contrast = season in ("Primavera", "Invierno")
+    contrast_matches = high_contrast == expects_high_contrast
 
-    contrast = max(lightness_values) - min(lightness_values)
-    contrast_matches = None
-
-    if season != "No determinada":
-        expects_high_contrast = season in ("Primavera", "Invierno")
-        contrast_matches = (contrast >= 20) == expects_high_contrast
-
-    if temperature == "undetermined":
+    if temperature == "undetermined" or season == "No determinada":
         confidence = "low"
-    elif season == "No determinada":
-        confidence = (
-            "medium"
-            if luminosity_votes >= 2 and chromaticity_votes >= 2
-            else "low"
-        )
+    elif contrast_matches:
+        confidence = "high"
     else:
-        aligned_checks = sum(
-            (
-                luminosity_votes == 3,
-                chromaticity_votes == 3,
-                contrast_matches,
-            )
-        )
-        if aligned_checks == 3:
-            confidence = "high"
-        elif aligned_checks >= 1:
-            confidence = "medium"
-        else:
-            confidence = "low"
+        confidence = "medium"
 
     return {
         "temperature": temperature,
@@ -264,22 +231,13 @@ def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
         "confidence": confidence,
     }
 
-def calculate_confidence(season: str) -> str:
-    """
-    Devuelve el nivel de confianza de la clasificación.
-    """
-
-    if season == "No determinada":
-        return "low"
-
-    return "low"    
 
 def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[int, int, int], hair_rgb: tuple[int, int, int]) -> dict:
-    # Estos cortes provienen de mediciones de piel; las categorías de ojos y cabello son exploratorias.
+    # La estación usa categorías de piel; ojos y cabello aportan contraste.
     skin = describe_color(skin_rgb)
     eyes = describe_color(eyes_rgb)
     hair = describe_color(hair_rgb)
-    season = classify_season(skin, eyes, hair)
+
     #chromatic descriptions
     skin_chromaticity = describe_lab_chromaticity(skin["lab"][1], skin["lab"][2])
     eyes_chromaticity = describe_lab_chromaticity(eyes["lab"][1], eyes["lab"][2])

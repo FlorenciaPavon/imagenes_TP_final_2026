@@ -47,9 +47,7 @@ def _build_analyzed_color(color_data: dict) -> AnalyzedColor:
             b=color_data["lab"][2]
         ),
         chromaticity=color_data["chromaticity"],
-        hue_angle=color_data["hue_angle"],
-        luminosity_category=color_data["luminosity_category"],
-        chromaticity_category=color_data["chromaticity_category"]
+        hue_angle=color_data["hue_angle"]
     )
     
 
@@ -108,8 +106,8 @@ class AnalysisService:
             pairwise_differences=ColorDifferences(**pairwise_differences)
         )
         seasonal_analysis = SeasonalAnalysis(
-    **color_relationships["seasonal_analysis"]
-)
+            **color_relationships["seasonal_analysis"]
+        )
 
         if seasonal_analysis.season in SEASON_PALETTES:
             palette = Palette(
