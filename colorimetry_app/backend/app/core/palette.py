@@ -188,27 +188,29 @@ def describe_lab_chromaticity(a: float, b: float) -> dict:
     return lab_chromaticity_details
   
 def classify_season(skin: dict, eyes: dict, hair: dict) -> str:
-    """Aplica la heurística exploratoria no validada de las cuatro estaciones."""
-    skin_l, skin_a, skin_b = skin["lab"]
+    """
+    Clasificación exploratoria de las cuatro estaciones.
+    No asigna una estación si no puede determinar la temperatura.
+    """
 
-    # Aproximación exploratoria: no determina la temperatura de forma fiable.
-    is_warm = skin_b >= skin_a
-    is_light = skin["luminosity_category"] == "light"
-    is_bright = skin["chromaticity_category"] == "intense"
+    # La temperatura todavía no tiene una regla validada.
+    temperature = "undetermined"
 
-    # Ojos y cabello aportan contraste, pero la piel sigue siendo la referencia.
-    luminosities = (skin_l, eyes["lab"][0], hair["lab"][0])
-    contrast = max(luminosities) - min(luminosities)
-    has_high_contrast = contrast >= 20.0  # Umbral inicial para calibrar con pruebas.
+    if temperature == "undetermined":
+        return "No determinada"
 
-    if is_warm:
-        if is_light and (is_bright or has_high_contrast):
-            return "Primavera"
-        return "Otoño"
+    # Las reglas estacionales se incorporarán cuando
+    # haya un criterio de temperatura fundamentado.
 
-    if is_light and not (is_bright or has_high_contrast):
-        return "Verano"
-    return "Invierno"
+def calculate_confidence(season: str) -> str:
+    """
+    Devuelve el nivel de confianza de la clasificación.
+    """
+
+    if season == "No determinada":
+        return "low"
+
+    return "low"    
 
 def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[int, int, int], hair_rgb: tuple[int, int, int]) -> dict:
     # Estos cortes provienen de mediciones de piel; las categorías de ojos y cabello son exploratorias.

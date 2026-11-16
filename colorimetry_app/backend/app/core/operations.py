@@ -4,16 +4,16 @@ Color extraction operations.
 """
 from statistics import median
 
-def get_region_pixels(image, x: int, y: int) -> list:
+def get_region_pixels(image, x: int, y: int, radius: int = 2) -> list:
     """
     Obtiene los píxeles de una región de 5x5 alrededor del punto seleccionado.
     """
 
-    x_inicio = max(0, x - 2)
-    x_fin = min(image.width, x + 3)
+    x_inicio = max(0, x - radius)
+    x_fin = min(image.width, x + radius + 1)
 
-    y_inicio = max(0, y - 2)
-    y_fin = min(image.height, y + 3)    
+    y_inicio = max(0, y - radius)
+    y_fin = min(image.height, y + radius + 1)    
 
     pixels = []
 
@@ -25,9 +25,9 @@ def get_region_pixels(image, x: int, y: int) -> list:
 
     return pixels
 
-def get_representative_color(image, x: int, y: int) -> tuple[int, int, int]:
+def get_representative_color(image, x: int, y: int, radius: int = 2) -> tuple[int, int, int]:
     image = image.convert("RGB") #que pasa con los grises?
-    pixels = get_region_pixels(image, x, y)
+    pixels = get_region_pixels(image, x, y, radius)
 
     reds = []
     greens = []

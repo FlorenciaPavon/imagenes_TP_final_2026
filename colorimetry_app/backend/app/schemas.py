@@ -18,13 +18,23 @@ ErrorCode = Literal[
     "INVALID_COORDINATES", #	Alguna coordenada está fuera de los límites de la imagen.
 ]
 
-Temperature = Literal["warm", "cool", "neutral"] #Literal restringe los valores permitidos. En cambio, si usamos str, acepta cualquier texto, incluso uno que no tenga sentido para nuestro análisis.
+Temperature = Literal["warm", "cool", "undetermined"] #Literal restringe los valores permitidos. En cambio, si usamos str, acepta cualquier texto, incluso uno que no tenga sentido para nuestro análisis.
 
 Luminosity = Literal["light", "medium", "dark"]
 
 Chromaticity = Literal["soft", "medium", "intense"]
 
 Contrast = Literal["low", "medium", "high"]
+
+Season = Literal[
+    "Primavera",
+    "Verano",
+    "Otoño",
+    "Invierno",
+    "No determinada"
+]
+
+Confidence = Literal["low", "medium", "high"]
 
 class PointSelection(BaseModel):#permite que Pydantic valide los datos.
     x: int = Field(..., ge=0) #Field(...): indica que el dato es obligatorio. ge=0: significa greater than or equal to 0, es decir, mayor o igual a cero.
@@ -97,9 +107,17 @@ class Palette(BaseModel): #validamos que exista al menos un color. También se p
     name: str 
     colors: list[str] = Field(..., min_length=1) #### A MEJORAR
 
+class SeasonalAnalysis(BaseModel):
+    temperature: Temperature
+    luminosity: Luminosity
+    chromaticity: Chromaticity
+    season: Season
+    confidence: Confidence
+
 class AnalysisResponse(BaseModel):
     analysis: ColorRelationships
-    palette: Palette 
+    seasonal_analysis: SeasonalAnalysis
+    palette: Palette
     
 class ErrorDetail(BaseModel):
     code: ErrorCode
