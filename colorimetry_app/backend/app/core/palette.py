@@ -188,7 +188,7 @@ def describe_lab_chromaticity(a: float, b: float) -> dict:
     return lab_chromaticity_details
   
 def classify_season(skin: dict, eyes: dict, hair: dict) -> str:
-    """Clasificación inicial y orientativa en una de las cuatro estaciones."""
+    """Aplica la heurística exploratoria no validada de las cuatro estaciones."""
     skin_l, skin_a, skin_b = skin["lab"]
 
     # Aproximación exploratoria: no determina la temperatura de forma fiable.
@@ -211,7 +211,7 @@ def classify_season(skin: dict, eyes: dict, hair: dict) -> str:
     return "Invierno"
 
 def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[int, int, int], hair_rgb: tuple[int, int, int]) -> dict:
-    #individual colors
+    # Estos cortes provienen de mediciones de piel; las categorías de ojos y cabello son exploratorias.
     skin = describe_color(skin_rgb)
     eyes = describe_color(eyes_rgb)
     hair = describe_color(hair_rgb)
@@ -267,17 +267,15 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
 
 
 def classify_luminosity(l_value):
+    # Referencia de piel: 150 sujetos del origen 1 (UK), medidos en mejilla, pómulo,
+    # mentón y frente. Los 600 valores agrupados usan percentiles lineales 33,33/66,67,
+    # redondeados a dos decimales. Ojos y cabello no se calibraron por separado.
     if l_value <= 60.33:
         return "dark"
     elif l_value <= 64.32:
         return "medium"
     else:
         return "light"
-'''
-Se establecieron umbrales exploratorios para clasificar la luminosidad y la cromaticidad de la piel mediante los percentiles 33 y 
-67 de una muestra de 150 sujetos con mediciones disponibles en cuatro zonas faciales. Se utilizaron criterios globales, sin diferenciar 
-la zona de selección. Los valores obtenidos se consideran referencias iniciales y no estándares universales de colorimetría personal.'''
-
 def classify_chromaticity(c_value):
     if c_value <= 20.04:
         return "soft"

@@ -6,6 +6,19 @@ Aplicación web para explorar relaciones de color a partir de una fotografía. P
 
 El color se estima usando la mediana de una región de hasta 5 × 5 píxeles alrededor de cada punto seleccionado. La clasificación de estaciones es una aproximación inicial del proyecto, no un diagnóstico ni una evaluación profesional. La iluminación, el balance de blancos, la calidad de la fotografía y la ubicación de los puntos pueden cambiar los resultados.
 
+## Criterios de color y estimación de estación
+
+Los cortes de luminosidad (`L*`: 60.33 y 64.32) y cromaticidad (`C*`: 20.04 y 22.05) se calcularon sobre 600 mediciones de piel: 150 sujetos del origen 1 (UK), con una medición por sujeto en cada una de estas zonas: mejilla (código 2), pómulo (3), mentón (4) y frente (6). Se agruparon las cuatro zonas y se usaron los percentiles 33,33 y 66,67 con interpolación lineal, redondeados a dos decimales.
+
+Estos umbrales describen la distribución de las mediciones de piel. La aplicación también los usa para mostrar categorías de ojos y cabello, pero esas categorías son exploratorias y no se calibraron por separado. La regla de estación usa además una heurística inicial; la base de datos no contiene etiquetas de estaciones para validarla.
+
+La heurística toma la piel como referencia principal: considera cálida cuando `b* >= a*`, y usa sus categorías de luminosidad y cromaticidad para decidir si es clara e intensa. Ojos y cabello complementan el contexto mediante el contraste: se considera alto cuando el rango de `L*` entre los tres puntos es de al menos 20. La asignación actual es:
+
+- Piel cálida: Primavera si es clara y además intensa o de alto contraste; en los demás casos, Otoño.
+- Piel fría: Verano si es clara, no intensa y de bajo contraste; en los demás casos, Invierno.
+
+Es una propuesta exploratoria del proyecto, no una regla validada con diagnósticos o etiquetas de estación.
+
 ## Requisitos
 
 - Python 3.9 o posterior.
@@ -72,5 +85,7 @@ backend/
     main.py     Configuración de FastAPI y publicación del frontend
 frontend/       Interfaz HTML, CSS y JavaScript
 tests/          Pruebas automatizadas
-archivos extra/ Archivos de datos complementarios
+archivos extra/
+  Skin Database 1-92.xlsx                 Libro original con el diccionario de códigos
+  Skin Database 1-92.xlsx - Database.csv Exportación de la hoja de mediciones
 ```

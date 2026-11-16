@@ -1,6 +1,10 @@
 import unittest
 
-from app.core.palette import classify_season
+from app.core.palette import (
+    classify_chromaticity,
+    classify_luminosity,
+    classify_season,
+)
 from app.core.palettes_colors import SEASON_PALETTES
 
 
@@ -55,5 +59,17 @@ class ClassifySeasonTests(unittest.TestCase):
                 self.assertTrue(all(color.startswith("#") for color in palette))
 
 
+class ColorCategoryBoundaryTests(unittest.TestCase):
+    def test_luminosity_threshold_boundaries(self):
+        self.assertEqual(classify_luminosity(60.33), "dark")
+        self.assertEqual(classify_luminosity(60.34), "medium")
+        self.assertEqual(classify_luminosity(64.32), "medium")
+        self.assertEqual(classify_luminosity(64.33), "light")
+
+    def test_chromaticity_threshold_boundaries(self):
+        self.assertEqual(classify_chromaticity(20.04), "soft")
+        self.assertEqual(classify_chromaticity(20.05), "medium")
+        self.assertEqual(classify_chromaticity(22.05), "medium")
+        self.assertEqual(classify_chromaticity(22.06), "intense")
 if __name__ == "__main__":
     unittest.main()

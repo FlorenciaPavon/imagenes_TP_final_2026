@@ -251,6 +251,11 @@ function renderAnalysis(result) {
 
     analysisResult.innerHTML = `
         <h2 class="results-title">Tu análisis de color</h2>
+        <p class="analysis-note">
+            La piel guía la calidez, luminosidad y cromaticidad; ojos y cabello aportan contraste.
+            Sus categorías usan rangos estimados con datos de piel, así que son exploratorias.
+            La estación y la paleta son orientativas.
+        </p>
 
         <h3 class="result-section-heading">Paleta recomendada: ${result.palette.name}</h3>
 
