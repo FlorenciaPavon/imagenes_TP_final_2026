@@ -1,6 +1,7 @@
 import colorsys
 from PIL import Image
 import math
+from statistics import median
 
 '''
 El calculo de umbrales de luminosidad y cromaticidad se hizo teniendo en cuenta el archivo Skin Database 1-92-xlsx obtenido desde https://cie.co.at/technicalcommittees/skin-colour-database
@@ -187,20 +188,81 @@ def describe_lab_chromaticity(a: float, b: float) -> dict:
                     
     return lab_chromaticity_details
   
-def classify_season(skin: dict, eyes: dict, hair: dict) -> str:
-    """
-    Clasificación exploratoria de las cuatro estaciones.
-    No asigna una estación si no puede determinar la temperatura.
-    """
+def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
+    colors = (skin, eyes, hair)
 
-    # La temperatura todavía no tiene una regla validada.
-    temperature = "undetermined"
+    lightness_values = [color["lab"][0] for color in colors]
+    chromaticity_values = [color["chromaticity"] for color in colors]
+
+    luminosity = classify_luminosity(median(lightness_values))
+    chromaticity = classify_chromaticity(median(chromaticity_values))
+
+    skin_a = skin["lab"][1]
+    skin_b = skin["lab"][2]
+    temperature_delta = skin_b - skin_a
+
+    if temperature_delta == 0:
+        temperature = "undetermined"
+    elif temperature_delta > 0:
+        temperature = "warm"
+    else:
+        temperature = "cool"
+
+    profiles = {
+        ("warm", "light", "intense"): "Primavera",
+        ("cool", "light", "soft"): "Verano",
+        ("warm", "dark", "soft"): "Otoño",
+        ("cool", "dark", "intense"): "Invierno",
+    }
+    season = profiles.get(
+        (temperature, luminosity, chromaticity),
+        "No determinada",
+    )
+
+    luminosity_votes = sum(
+        color["luminosity_category"] == luminosity for color in colors
+    )
+    chromaticity_votes = sum(
+        color["chromaticity_category"] == chromaticity for color in colors
+    )
+
+    contrast = max(lightness_values) - min(lightness_values)
+    contrast_matches = None
+
+    if season != "No determinada":
+        expects_high_contrast = season in ("Primavera", "Invierno")
+        contrast_matches = (contrast >= 20) == expects_high_contrast
 
     if temperature == "undetermined":
-        return "No determinada"
+        confidence = "low"
+    elif season == "No determinada":
+        confidence = (
+            "medium"
+            if luminosity_votes >= 2 and chromaticity_votes >= 2
+            else "low"
+        )
+    else:
+        aligned_checks = sum(
+            (
+                luminosity_votes == 3,
+                chromaticity_votes == 3,
+                contrast_matches,
+            )
+        )
+        if aligned_checks == 3:
+            confidence = "high"
+        elif aligned_checks >= 1:
+            confidence = "medium"
+        else:
+            confidence = "low"
 
-    # Las reglas estacionales se incorporarán cuando
-    # haya un criterio de temperatura fundamentado.
+    return {
+        "temperature": temperature,
+        "luminosity": luminosity,
+        "chromaticity": chromaticity,
+        "season": season,
+        "confidence": confidence,
+    }
 
 def calculate_confidence(season: str) -> str:
     """
@@ -241,6 +303,7 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
     # contrasts and differences
     hsv_contrast = contrast(skin_v,eyes_v,hair_v)
     lab_contrast= get_luminosity_contrast(skin_l,eyes_l,hair_l)
+    seasonal_analysis = classify_season(skin, eyes, hair)
     pairwise_luminosity_differences= get_pairwise_luminosity_differences(skin_l, eyes_l, hair_l)
     pairwise_value_differences=get_pairwise_value_differences(skin_v, eyes_v, hair_v)
     pairwise_chrom_differences = get_pairwise_chromaticity_differences(skin_c, eyes_c, hair_c)
@@ -261,7 +324,7 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
         "pairwise_value_differences": pairwise_value_differences,
         "pairwise_chrom_differences": pairwise_chrom_differences,
         "pairwise_hue_differences": pairwise_hue_differences,
-        "season": season
+        "seasonal_analysis": seasonal_analysis
     }
 
     

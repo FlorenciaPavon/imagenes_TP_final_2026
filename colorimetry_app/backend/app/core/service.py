@@ -18,7 +18,8 @@ from app.schemas import (
     GlobalContrast,
     ColorDifferences,
     ColorRelationships,
-    AnalysisResponse
+    AnalysisResponse,
+    SeasonalAnalysis
 )
 from app.core.palette import analyze_color_relationships
 from app.core.operations import get_representative_color
@@ -106,18 +107,30 @@ class AnalysisService:
             ),
             pairwise_differences=ColorDifferences(**pairwise_differences)
         )
-        season = color_relationships["season"]
+        seasonal_analysis = SeasonalAnalysis(
+    **color_relationships["seasonal_analysis"]
+)
 
-        palette = Palette(
-            name=season,
-            colors=SEASON_PALETTES[season],
-        )
-    
+        if seasonal_analysis.season in SEASON_PALETTES:
+            palette = Palette(
+                name=seasonal_analysis.season,
+                colors=SEASON_PALETTES[seasonal_analysis.season],
+            )
+        else:
+            palette = Palette(
+                name="Colores seleccionados; sin estación determinada",
+                colors=[
+                    f"#{relationships.skin.rgb.r:02X}{relationships.skin.rgb.g:02X}{relationships.skin.rgb.b:02X}",
+                    f"#{relationships.eyes.rgb.r:02X}{relationships.eyes.rgb.g:02X}{relationships.eyes.rgb.b:02X}",
+                    f"#{relationships.hair.rgb.r:02X}{relationships.hair.rgb.g:02X}{relationships.hair.rgb.b:02X}",
+                ],
+            )
+
         return AnalysisResponse(
             analysis=relationships,
-            palette=palette
+            seasonal_analysis=seasonal_analysis,
+            palette=palette,
         )
-
 '''
         palette = Palette(
             name="Colores analizados",
