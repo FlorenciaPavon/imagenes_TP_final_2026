@@ -114,16 +114,3 @@ class ErrorResponse(BaseModel):
     """Body of all custom error responses."""
     detail: ErrorDetail
 
-
-    
-'''Ej
-Palette(
-    name="Otoño suave",
-    colors=["#A66F50", "#C18C69", "#D5B68C"]
-)
-
-#respuesta provisoria de analisis
-class AnalysisResponse(BaseModel):
-    colors: ExtractedColors
-    analysis: ColorAnalysis
-    palette: Palette'''
