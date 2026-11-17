@@ -15,7 +15,7 @@ from app.schemas import (
     HSVColor,
     LabColor,
     AnalyzedColor,
-    GlobalContrast,
+    ColorRanges,
     ColorDifferences,
     ColorRelationships,
     AnalysisResponse,
@@ -46,7 +46,7 @@ def _build_analyzed_color(color_data: dict) -> AnalyzedColor:
             a=color_data["lab"][1],
             b=color_data["lab"][2]
         ),
-        chromaticity=color_data["chromaticity"],
+        chroma=color_data["chroma"],
         hue_angle=color_data["hue_angle"]
     )
     
@@ -89,9 +89,9 @@ class AnalysisService:
         color_relationships = analyze_color_relationships(skin_color, eyes_color,hair_color) 
 
         pairwise_differences = {
-            "luminosity": color_relationships["pairwise_luminosity_differences"],
+            "lightness": color_relationships["pairwise_lightness_differences"],
             "value": color_relationships["pairwise_value_differences"],
-            "chromaticity": color_relationships["pairwise_chrom_differences"],
+            "chroma": color_relationships["pairwise_chroma_differences"],
             "hue": color_relationships["pairwise_hue_differences"]
         }
 
@@ -99,9 +99,9 @@ class AnalysisService:
             skin=_build_analyzed_color(color_relationships["skin"]),
             eyes=_build_analyzed_color(color_relationships["eyes"]),
             hair=_build_analyzed_color(color_relationships["hair"]),
-            luminosity_contrast=GlobalContrast(
-                hsv=color_relationships["luminosity_contrast"]["hsv"],
-                lab=color_relationships["luminosity_contrast"]["lab"]
+            color_ranges=ColorRanges(
+                value=color_relationships["color_ranges"]["value"],
+                lightness=color_relationships["color_ranges"]["lightness"]
             ),
             pairwise_differences=ColorDifferences(**pairwise_differences)
         )

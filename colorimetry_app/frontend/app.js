@@ -238,13 +238,13 @@ function renderAnalysis(result) {
     ];
 
     // Traducción de las categorías del backend
-    const luminosityLabels = {
+    const lightnessLabels = {
         light: "Clara",
         medium: "Media",
         dark: "Oscura"
     };
 
-    const chromaticityLabels = {
+    const chromaLabels = {
         soft: "Suave",
         medium: "Media",
         intense: "Intensa"
@@ -256,7 +256,7 @@ function renderAnalysis(result) {
         undetermined: "Indeterminada"
     };
 
-    const confidenceLabels = {
+    const consistencyLabels = {
         low: "Baja",
         medium: "Media",
         high: "Alta"
@@ -275,20 +275,20 @@ function renderAnalysis(result) {
                 exploratorios; la luz y la selección de los puntos pueden influir.
             </p>
             <p>
-                <strong>Temperatura de piel:</strong>
+                <strong>Indicador térmico de piel (heurístico):</strong>
                 ${temperatureLabels[seasonal.temperature] || "Sin clasificar"}
                 &nbsp;·&nbsp;
-                <strong>Luminosidad de piel:</strong>
-                ${luminosityLabels[seasonal.luminosity] || "Sin clasificar"}
+                <strong>Claridad de piel (L*):</strong>
+                ${lightnessLabels[seasonal.lightness] || "Sin clasificar"}
                 &nbsp;·&nbsp;
-                <strong>Cromaticidad de piel:</strong>
-                ${chromaticityLabels[seasonal.chromaticity] || "Sin clasificar"}
+                <strong>Croma de piel (C*):</strong>
+                ${chromaLabels[seasonal.chroma] || "Sin clasificar"}
             </p>
             <p>
-                <strong>Estación:</strong> ${seasonal.season}
+                <strong>Estación estimada (heurística):</strong> ${seasonal.season}
                 &nbsp;·&nbsp;
-                <strong>Confianza:</strong>
-                ${confidenceLabels[seasonal.confidence] || "Sin clasificar"}
+                <strong>Consistencia de las reglas:</strong>
+                ${consistencyLabels[seasonal.rule_consistency] || "Sin clasificar"}
             </p>
         </div>
 
@@ -338,7 +338,7 @@ function renderAnalysis(result) {
 
                             <p>
                                 <strong>C*:</strong>
-                                ${color.data.chromaticity.toFixed(2)}
+                                ${color.data.chroma.toFixed(2)}
                             </p>
 
                         </div>
@@ -348,23 +348,23 @@ function renderAnalysis(result) {
         </div>
 
         <div class="contrast-section">
-            <h3>Contraste de luminosidad</h3>
+            <h3>Rangos entre los puntos seleccionados</h3>
 
-            <p>HSV: ${(analysis.luminosity_contrast.hsv * 100).toFixed(2)}%</p>
+            <p>Rango de V (HSV): ${(analysis.color_ranges.value * 100).toFixed(2)}%</p>
 
             <div class="contrast-bar">
                 <div
                     class="contrast-fill"
-                    style="width: ${analysis.luminosity_contrast.hsv * 100}%">
+                    style="width: ${analysis.color_ranges.value * 100}%">
                 </div>
             </div>
 
-            <p>LAB: ${analysis.luminosity_contrast.lab.toFixed(2)} / 100</p>
+            <p>Rango de L* (CIELAB): ${analysis.color_ranges.lightness.toFixed(2)} / 100</p>
 
             <div class="contrast-bar">
                 <div
                     class="contrast-fill"
-                    style="width: ${analysis.luminosity_contrast.lab}%">
+                    style="width: ${analysis.color_ranges.lightness}%">
                 </div>
             </div>
         </div>

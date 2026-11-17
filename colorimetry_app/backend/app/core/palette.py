@@ -3,7 +3,7 @@ from PIL import Image
 import math
 
 '''
-El calculo de umbrales de luminosidad y cromaticidad se hizo teniendo en cuenta el archivo Skin Database 1-92-xlsx obtenido desde https://cie.co.at/technicalcommittees/skin-colour-database
+El calculo de umbrales de claridad y croma se hizo teniendo en cuenta el archivo Skin Database 1-92-xlsx obtenido desde https://cie.co.at/technicalcommittees/skin-colour-database
 corresponde al origen 1 (UK) y las ubicaciones 2 (mejilla), 3 (pómulo), 4 (mentón) y 6 (frente): 150 sujetos, una medición por sujeto en cada zona, 600 registros en total. Los percentiles están agrupados entre las cuatro zonas, no calculados por separado.
 se usaron los percentiles 33,33 y 66,67, con interpolación lineal y redondeo a dos decimales
 '''
@@ -39,55 +39,41 @@ def rgb_to_lab(rgb: tuple[int, int, int]) -> tuple[float, float, float]:#usamos 
 
     return tuple(new_lab)
 
-def get_lab_chromaticity(a: float, b: float) -> tuple[float, float]:
+def get_lab_chroma(a: float, b: float) -> tuple[float, float]:
 
-    list_crhom =[]
-
-    #chromaticity
-    c = math.sqrt(a**2 + b**2)
-    list_crhom.append(c)
-
-    # Degrees
-    h = math.degrees(math.atan2(b, a)) % 360
-    list_crhom.append(h)
-
-    return tuple(list_crhom)
+    chroma = math.sqrt(a**2 + b**2)
+    hue_angle = math.degrees(math.atan2(b, a)) % 360
+    return chroma, hue_angle
 
 
 def describe_color(rgb: tuple[int, int, int]) -> dict:
     hsv= rgb_to_hsv(rgb)
     lab=rgb_to_lab(rgb)
 
-    l, a, b = lab
-    c,h=get_lab_chromaticity(a,b)
+    _, a, b = lab
+    c, h = get_lab_chroma(a, b)
 
     description = {
         "rgb": rgb,
         "hsv": hsv,
         "lab": lab,
-        "chromaticity": c,
+        "chroma": c,
         "hue_angle": h,
     }
 
     return description
 
 
-def contrast(skin_v, eyes_v, hair_v):
-    
-    v_max= max(skin_v, eyes_v, hair_v)
-    v_min= min(skin_v, eyes_v, hair_v)
+def get_value_range(skin_v, eyes_v, hair_v):
+    return max(skin_v, eyes_v, hair_v) - min(skin_v, eyes_v, hair_v)
 
-    contrast = v_max-v_min
-
-    return contrast
-
-def get_luminosity_contrast(skin_l: float, eyes_l: float, hair_l: float) -> float:
+def get_lightness_range(skin_l: float, eyes_l: float, hair_l: float) -> float:
     l_max= max(skin_l, eyes_l, hair_l)
     l_min= min(skin_l, eyes_l, hair_l)
 
-    contrast = l_max-l_min
+    lightness_range = l_max-l_min
 
-    return contrast
+    return lightness_range
 def get_hue_angle_difference(h1: float, h2: float) -> float:
 
     abs_difference = abs(h1-h2)
@@ -97,19 +83,17 @@ def get_hue_angle_difference(h1: float, h2: float) -> float:
 
     return min_complementary_difference
 
-def get_pairwise_luminosity_differences(skin_l, eyes_l, hair_l) -> dict:
+def get_pairwise_lightness_differences(skin_l, eyes_l, hair_l) -> dict:
 
-    lum_dif_skin_eyes= abs(skin_l-eyes_l)
-    lum_dif_eyes_hair=abs(eyes_l-hair_l)
-    lum_dif_skin_hair=abs(skin_l-hair_l)
+    diff_skin_eyes = abs(skin_l - eyes_l)
+    diff_eyes_hair = abs(eyes_l - hair_l)
+    diff_skin_hair = abs(skin_l - hair_l)
 
-    pairwise_luminosity_differences = {
-            "skin_eyes": lum_dif_skin_eyes,
-            "eyes_hair": lum_dif_eyes_hair,
-            "skin_hair":lum_dif_skin_hair,            
-            }
-            
-    return pairwise_luminosity_differences
+    return {
+        "skin_eyes": diff_skin_eyes,
+        "eyes_hair": diff_eyes_hair,
+        "skin_hair": diff_skin_hair,
+    }
 
 def get_pairwise_value_differences(skin_v, eyes_v, hair_v) -> dict:
 
@@ -125,7 +109,7 @@ def get_pairwise_value_differences(skin_v, eyes_v, hair_v) -> dict:
             
     return pairwise_value_differences
 
-def get_pairwise_chromaticity_differences(skin_c, eyes_c, hair_c) -> dict:
+def get_pairwise_chroma_differences(skin_c, eyes_c, hair_c) -> dict:
     cont_chrom_skin_eyes= abs(skin_c-eyes_c)
     cont_chrom_eyes_hair=abs(eyes_c-hair_c)
     cont_chrom_skin_hair=abs(skin_c-hair_c)
@@ -151,11 +135,11 @@ def get_pairwise_hue_differences(skin_h, eyes_h, hair_h) -> dict:
                     
     return pairwise_hue_differences
 
-def describe_lab_chromaticity(a: float, b: float) -> dict:  
+def describe_lab_chroma(a: float, b: float) -> dict:
     
-    chromaticity = get_lab_chromaticity(a,b)
-    calculated_angle = chromaticity[1]
-    calculated_chromaticity=chromaticity[0]
+    chroma_and_angle = get_lab_chroma(a, b)
+    calculated_angle = chroma_and_angle[1]
+    calculated_chroma = chroma_and_angle[0]
 
     if a > 0:
         res_a = "Red trend"
@@ -172,93 +156,16 @@ def describe_lab_chromaticity(a: float, b: float) -> dict:
         res_b = "No specific direction"
 
 
-    lab_chromaticity_details = {
+    lab_chroma_details = {
             "a": a,
             "b": b,
-            "chromaticity": calculated_chromaticity,
+            "chroma": calculated_chroma,
             "a_direction": res_a,
             "b_direction": res_b,
             "hue_angle": calculated_angle,            
             }
                     
-    return lab_chromaticity_details
-'''
-def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
-    temperature_delta = skin["lab"][2] - skin["lab"][1]
-
-    if abs(temperature_delta) <= 3:
-        temperature = "undetermined"
-    elif temperature_delta > 0:
-        temperature = "warm"
-    else:
-        temperature = "cool"
-    luminosity = classify_luminosity(skin["lab"][0])
-    chromaticity = classify_chromaticity(skin["chromaticity"])
-
-    NO CLASIFICA BIEN INVIERNO
-    if temperature_delta == 0:
-        temperature = "undetermined"
-    elif temperature_delta > 0:
-        temperature = "warm"
-    else:
-        temperature = "cool"
-
-
-    profiles = {
-        ("warm", "light", "intense"): "Primavera",
-        ("cool", "light", "soft"): "Verano",
-        ("warm", "dark", "soft"): "Otoño",
-        ("cool", "dark", "intense"): "Invierno",
-    }
-    season = profiles.get(
-        (temperature, luminosity, chromaticity),
-        "No determinada",
-    )
-    # DESAMBIGUACIÓN
-    if temperature == "undetermined":
-        contrast_lab = get_luminosity_contrast(
-            skin["lab"][0],
-            eyes["lab"][0],
-            hair["lab"][0]
-        )
-
-    if luminosity == "dark":
-        if contrast_lab >= 20:
-            season = "Invierno"
-        else:
-            season = "Otoño"
-
-    elif luminosity == "light":
-        if contrast_lab >= 20:
-            season = "Primavera"
-        else:
-            season = "Verano"
-
-    lightness_values = [
-        skin["lab"][0],
-        eyes["lab"][0],
-        hair["lab"][0],
-    ]
-    high_contrast = max(lightness_values) - min(lightness_values) >= 20
-    expects_high_contrast = season in ("Primavera", "Invierno")
-    contrast_matches = high_contrast == expects_high_contrast
-
-    if temperature == "undetermined" or season == "No determinada":
-        confidence = "low"
-    elif contrast_matches:
-        confidence = "high"
-    else:
-        confidence = "medium"
-
-    return {
-        "temperature": temperature,
-        "luminosity": luminosity,
-        "chromaticity": chromaticity,
-        "season": season,
-        "confidence": confidence,
-    }
-'''
-
+    return lab_chroma_details
 def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
 
     temperature_delta = skin["lab"][2] - skin["lab"][1]
@@ -270,13 +177,13 @@ def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
     else:
         temperature = "undetermined"
 
-    luminosity = classify_luminosity(skin["lab"][0])
-    chromaticity = classify_chromaticity(skin["chromaticity"])
+    lightness = classify_lightness(skin["lab"][0])
+    chroma = classify_chroma(skin["chroma"])
 
     if temperature == "warm":
-        season = "Primavera" if luminosity == "light" else "Otoño"
+        season = "Primavera" if lightness == "light" else "Otoño"
     elif temperature == "cool":
-        season = "Verano" if luminosity == "light" else "Invierno"
+        season = "Verano" if lightness == "light" else "Invierno"
     else:
         season = "No determinada"
 
@@ -298,14 +205,14 @@ def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
         high_contrast == expects_high_contrast
     )
 
-    expected_chromaticity = {
+    expected_chroma = {
         "Primavera": "intense",
         "Verano": "soft",
         "Otoño": "soft",
         "Invierno": "intense",
     }
-    chromaticity_matches = (
-        chromaticity == expected_chromaticity.get(season)
+    chroma_matches = (
+        chroma == expected_chroma.get(season)
     )
 
     if (
@@ -313,32 +220,23 @@ def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
         or season == "No determinada"
         or abs(temperature_delta) <= 3
     ):
-        confidence = "low"
-    elif contrast_matches and chromaticity_matches:
-        confidence = "high"
-    elif contrast_matches or chromaticity_matches:
-        confidence = "medium"
+        rule_consistency = "low"
+    elif contrast_matches and chroma_matches:
+        rule_consistency = "high"
+    elif contrast_matches or chroma_matches:
+        rule_consistency = "medium"
     else:
-        confidence = "low"
+        rule_consistency = "low"
 
     return {
         "temperature_delta": temperature_delta,
         "temperature": temperature,
-        "luminosity": luminosity,
-        "chromaticity": chromaticity,
+        "lightness": lightness,
+        "chroma": chroma,
         "season": season,
-        "confidence": confidence,
+        "rule_consistency": rule_consistency,
     }
 
-'''
-    return {
-        "temperature": temperature,
-        "luminosity": luminosity,
-        "chromaticity": chromaticity,
-        "season": season,
-        "confidence": confidence,
-    }
-'''
 def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[int, int, int], hair_rgb: tuple[int, int, int]) -> dict:
     # La estación usa categorías de piel; ojos y cabello aportan contraste.
     skin = describe_color(skin_rgb)
@@ -346,48 +244,48 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
     hair = describe_color(hair_rgb)
 
     #chromatic descriptions
-    skin_chromaticity = describe_lab_chromaticity(skin["lab"][1], skin["lab"][2])
-    eyes_chromaticity = describe_lab_chromaticity(eyes["lab"][1], eyes["lab"][2])
-    hair_chromaticity = describe_lab_chromaticity(hair["lab"][1], hair["lab"][2])
+    skin_chroma = describe_lab_chroma(skin["lab"][1], skin["lab"][2])
+    eyes_chroma = describe_lab_chroma(eyes["lab"][1], eyes["lab"][2])
+    hair_chroma = describe_lab_chroma(hair["lab"][1], hair["lab"][2])
 
     skin_l = skin["lab"][0]
     skin_v = skin["hsv"][2]
-    skin_c= skin["chromaticity"] 
+    skin_c = skin["chroma"]
     skin_h =skin["hue_angle"]
 
     eyes_l = eyes["lab"][0]
     eyes_v = eyes["hsv"][2]
-    eyes_c = eyes["chromaticity"]
+    eyes_c = eyes["chroma"]
     eyes_h = eyes["hue_angle"]
 
     hair_l = hair["lab"][0]
     hair_v = hair["hsv"][2]
-    hair_c = hair["chromaticity"]
+    hair_c = hair["chroma"]
     hair_h = hair["hue_angle"]
 
     # contrasts and differences
-    hsv_contrast = contrast(skin_v,eyes_v,hair_v)
-    lab_contrast= get_luminosity_contrast(skin_l,eyes_l,hair_l)
+    value_range = get_value_range(skin_v, eyes_v, hair_v)
+    lightness_range = get_lightness_range(skin_l, eyes_l, hair_l)
     seasonal_analysis = classify_season(skin, eyes, hair)
-    pairwise_luminosity_differences= get_pairwise_luminosity_differences(skin_l, eyes_l, hair_l)
+    pairwise_lightness_differences = get_pairwise_lightness_differences(skin_l, eyes_l, hair_l)
     pairwise_value_differences=get_pairwise_value_differences(skin_v, eyes_v, hair_v)
-    pairwise_chrom_differences = get_pairwise_chromaticity_differences(skin_c, eyes_c, hair_c)
+    pairwise_chroma_differences = get_pairwise_chroma_differences(skin_c, eyes_c, hair_c)
     pairwise_hue_differences = get_pairwise_hue_differences(skin_h, eyes_h, hair_h)
 
     colors_relationships= {
         "skin": skin,
         "eyes": eyes,
         "hair":hair,
-        "skin_chromaticity": skin_chromaticity,
-        "eyes_chromaticity": eyes_chromaticity,
-        "hair_chromaticity": hair_chromaticity,
-        "luminosity_contrast": {
-            "hsv": hsv_contrast,
-            "lab": lab_contrast
+        "skin_chroma": skin_chroma,
+        "eyes_chroma": eyes_chroma,
+        "hair_chroma": hair_chroma,
+        "color_ranges": {
+            "value": value_range,
+            "lightness": lightness_range
         },
-        "pairwise_luminosity_differences": pairwise_luminosity_differences,
+        "pairwise_lightness_differences": pairwise_lightness_differences,
         "pairwise_value_differences": pairwise_value_differences,
-        "pairwise_chrom_differences": pairwise_chrom_differences,
+        "pairwise_chroma_differences": pairwise_chroma_differences,
         "pairwise_hue_differences": pairwise_hue_differences,
         "seasonal_analysis": seasonal_analysis,
     }
@@ -396,7 +294,7 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
     return colors_relationships
 
 
-def classify_luminosity(l_value):
+def classify_lightness(l_value):
     # Referencia de piel: 150 sujetos del origen 1 (UK), medidos en mejilla, pómulo,
     # mentón y frente. Los 600 valores agrupados usan percentiles lineales 33,33/66,67,
     # redondeados a dos decimales. Ojos y cabello no se calibraron por separado.
@@ -406,7 +304,7 @@ def classify_luminosity(l_value):
         return "medium"
     else:
         return "light"
-def classify_chromaticity(c_value):
+def classify_chroma(c_value):
     if c_value <= 20.04:
         return "soft"
     elif c_value <= 22.05:

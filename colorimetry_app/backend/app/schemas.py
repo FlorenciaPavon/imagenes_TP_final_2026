@@ -20,11 +20,11 @@ ErrorCode = Literal[
 
 Temperature = Literal["warm", "cool", "undetermined"] #Literal restringe los valores permitidos. En cambio, si usamos str, acepta cualquier texto, incluso uno que no tenga sentido para nuestro análisis.
 
-Luminosity = Literal["light", "medium", "dark"]
+Lightness = Literal["light", "medium", "dark"]
 
-Chromaticity = Literal["soft", "medium", "intense"]
+Chroma = Literal["soft", "medium", "intense"]
 
-Contrast = Literal["low", "medium", "high"]
+RuleConsistency = Literal["low", "medium", "high"]
 
 Season = Literal[
     "Primavera",
@@ -33,8 +33,6 @@ Season = Literal[
     "Invierno",
     "No determinada"
 ]
-
-Confidence = Literal["low", "medium", "high"]
 
 class PointSelection(BaseModel):#permite que Pydantic valide los datos.
     x: int = Field(..., ge=0) #Field(...): indica que el dato es obligatorio. ge=0: significa greater than or equal to 0, es decir, mayor o igual a cero.
@@ -74,7 +72,7 @@ class AnalyzedColor(BaseModel):
     rgb: RGBColor
     hsv: HSVColor
     lab: LabColor
-    chromaticity: float = Field(..., ge=0)
+    chroma: float = Field(..., ge=0)
     hue_angle: float = Field(..., ge=0, lt=360) 
 
 class PairwiseDifferences(BaseModel):
@@ -83,20 +81,20 @@ class PairwiseDifferences(BaseModel):
     skin_hair: float = Field(..., ge=0)
 
 class ColorDifferences(BaseModel):
-    luminosity: PairwiseDifferences
+    lightness: PairwiseDifferences
     value: PairwiseDifferences
-    chromaticity: PairwiseDifferences
+    chroma: PairwiseDifferences
     hue: PairwiseDifferences
 
-class GlobalContrast(BaseModel):
-    hsv: float = Field(..., ge=0, le=1)
-    lab: float = Field(..., ge=0, le=100)
+class ColorRanges(BaseModel):
+    value: float = Field(..., ge=0, le=1)
+    lightness: float = Field(..., ge=0, le=100)
 
 class ColorRelationships(BaseModel):
     skin: AnalyzedColor
     eyes: AnalyzedColor
     hair: AnalyzedColor
-    luminosity_contrast: GlobalContrast
+    color_ranges: ColorRanges
     pairwise_differences: ColorDifferences
 
     
@@ -108,10 +106,10 @@ class Palette(BaseModel): #validamos que exista al menos un color. También se p
 class SeasonalAnalysis(BaseModel):
     temperature_delta: float
     temperature: Temperature
-    luminosity: Luminosity
-    chromaticity: Chromaticity
+    lightness: Lightness
+    chroma: Chroma
     season: Season
-    confidence: Confidence
+    rule_consistency: RuleConsistency
 
 class AnalysisResponse(BaseModel):
     analysis: ColorRelationships

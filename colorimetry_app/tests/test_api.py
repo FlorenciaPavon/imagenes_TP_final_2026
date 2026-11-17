@@ -76,7 +76,15 @@ class AnalyzeEndpointTests(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("analysis", response.json())
+        payload = response.json()
+        self.assertIn("analysis", payload)
+        self.assertIn("chroma", payload["analysis"]["skin"])
+        self.assertEqual(
+            set(payload["analysis"]["color_ranges"]),
+            {"value", "lightness"},
+        )
+        self.assertIn("rule_consistency", payload["seasonal_analysis"])
+        self.assertNotIn("confidence", payload["seasonal_analysis"])
 
     async def test_coordinate_outside_image_returns_clear_error(self):
         selections = self.valid_selections()

@@ -2,8 +2,8 @@ import unittest
 import math
 
 from app.core.palette import (
-    classify_chromaticity,
-    classify_luminosity,
+    classify_chroma,
+    classify_lightness,
     classify_season,
 )
 from app.core.palettes_colors import SEASON_PALETTES
@@ -12,7 +12,7 @@ from app.core.palettes_colors import SEASON_PALETTES
 def make_color(lightness, a, b):
     return {
         "lab": (lightness, a, b),
-        "chromaticity": math.sqrt(a**2 + b**2),
+        "chroma": math.sqrt(a**2 + b**2),
     }
 
 
@@ -35,7 +35,7 @@ class ClassifySeasonTests(unittest.TestCase):
                 "Otoño",
                 "high",
             ),
-            # La luminosidad media no debe dejar sin estación un caso cálido.
+            # La claridad media no debe dejar sin estación un caso cálido.
             (
                 make_color(62, 20, 24),
                 make_color(60, 0, 0),
@@ -43,7 +43,7 @@ class ClassifySeasonTests(unittest.TestCase):
                 "Otoño",
                 "medium",
             ),
-            # Piel fría, clara y suave -> Verano; alto contraste reduce la confianza
+            # Piel fría, clara y suave -> Verano; el rango reduce la consistencia
             (
                 make_color(81.57, 7, 3),
                 make_color(51.37, -2, -22),
@@ -61,18 +61,21 @@ class ClassifySeasonTests(unittest.TestCase):
             ),
         ]
 
-        for skin, eyes, hair, expected_season, expected_confidence in cases:
+        for skin, eyes, hair, expected_season, expected_consistency in cases:
             with self.subTest(expected_season=expected_season):
                 result = classify_season(skin, eyes, hair)
                 season = result["season"]
                 self.assertEqual(season, expected_season)
-                self.assertEqual(result["confidence"], expected_confidence)
+                self.assertEqual(
+                    result["rule_consistency"],
+                    expected_consistency,
+                )
 
                 palette = SEASON_PALETTES[season]
                 self.assertEqual(len(palette), 8)
                 self.assertTrue(all(color.startswith("#") for color in palette))
 
-    def test_undetermined_temperature_returns_no_season_and_low_confidence(self):
+    def test_undetermined_temperature_returns_no_season_and_low_consistency(self):
         skin = make_color(70, 5, 5)
         eyes = make_color(50, 0, 0)
         hair = make_color(40, 0, 0)
@@ -81,9 +84,9 @@ class ClassifySeasonTests(unittest.TestCase):
 
         self.assertEqual(result["temperature"], "undetermined")
         self.assertEqual(result["season"], "No determinada")
-        self.assertEqual(result["confidence"], "low")
+        self.assertEqual(result["rule_consistency"], "low")
 
-    def test_small_negative_temperature_delta_uses_sign_with_low_confidence(self):
+    def test_small_negative_temperature_delta_uses_sign_with_low_consistency(self):
         skin = make_color(7.45, 1, -1)
         eyes = make_color(21.18, 11, 10)
         hair = make_color(9.80, 2, -1)
@@ -92,12 +95,12 @@ class ClassifySeasonTests(unittest.TestCase):
 
         self.assertEqual(result["temperature_delta"], -2)
         self.assertEqual(result["temperature"], "cool")
-        self.assertEqual(result["luminosity"], "dark")
-        self.assertEqual(result["chromaticity"], "soft")
+        self.assertEqual(result["lightness"], "dark")
+        self.assertEqual(result["chroma"], "soft")
         self.assertEqual(result["season"], "Invierno")
-        self.assertEqual(result["confidence"], "low")
+        self.assertEqual(result["rule_consistency"], "low")
 
-    def test_small_positive_temperature_delta_uses_sign_with_low_confidence(self):
+    def test_small_positive_temperature_delta_uses_sign_with_low_consistency(self):
         skin = make_color(62, 10, 12)
         eyes = make_color(60, 0, 0)
         hair = make_color(58, 0, 0)
@@ -107,20 +110,20 @@ class ClassifySeasonTests(unittest.TestCase):
         self.assertEqual(result["temperature_delta"], 2)
         self.assertEqual(result["temperature"], "warm")
         self.assertEqual(result["season"], "Otoño")
-        self.assertEqual(result["confidence"], "low")
+        self.assertEqual(result["rule_consistency"], "low")
 
 
 class ColorCategoryBoundaryTests(unittest.TestCase):
-    def test_luminosity_threshold_boundaries(self):
-        self.assertEqual(classify_luminosity(60.33), "dark")
-        self.assertEqual(classify_luminosity(60.34), "medium")
-        self.assertEqual(classify_luminosity(64.32), "medium")
-        self.assertEqual(classify_luminosity(64.33), "light")
+    def test_lightness_threshold_boundaries(self):
+        self.assertEqual(classify_lightness(60.33), "dark")
+        self.assertEqual(classify_lightness(60.34), "medium")
+        self.assertEqual(classify_lightness(64.32), "medium")
+        self.assertEqual(classify_lightness(64.33), "light")
 
-    def test_chromaticity_threshold_boundaries(self):
-        self.assertEqual(classify_chromaticity(20.04), "soft")
-        self.assertEqual(classify_chromaticity(20.05), "medium")
-        self.assertEqual(classify_chromaticity(22.05), "medium")
-        self.assertEqual(classify_chromaticity(22.06), "intense")
+    def test_chroma_threshold_boundaries(self):
+        self.assertEqual(classify_chroma(20.04), "soft")
+        self.assertEqual(classify_chroma(20.05), "medium")
+        self.assertEqual(classify_chroma(22.05), "medium")
+        self.assertEqual(classify_chroma(22.06), "intense")
 if __name__ == "__main__":
     unittest.main()
