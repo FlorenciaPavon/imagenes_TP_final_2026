@@ -6,7 +6,7 @@ from statistics import median
 
 def get_region_pixels(image, x: int, y: int, radius: int = 2) -> list:
     """
-    Obtiene los píxeles de una región de 5x5 alrededor del punto seleccionado.
+    Gets the pixels from arround the radious in the selected point
     """
 
     x_inicio = max(0, x - radius)
@@ -26,7 +26,7 @@ def get_region_pixels(image, x: int, y: int, radius: int = 2) -> list:
     return pixels
 
 def get_representative_color(image, x: int, y: int, radius: int = 2) -> tuple[int, int, int]:
-    image = image.convert("RGB") #que pasa con los grises?
+    image = image.convert("RGB")
     pixels = get_region_pixels(image, x, y, radius)
 
     reds = []

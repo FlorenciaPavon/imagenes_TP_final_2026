@@ -129,12 +129,3 @@ class AnalysisService:
             seasonal_analysis=seasonal_analysis,
             palette=palette,
         )
-'''
-        palette = Palette(
-            name="Colores analizados",
-            colors=[
-                f"#{relationships.skin.rgb.r:02X}{relationships.skin.rgb.g:02X}{relationships.skin.rgb.b:02X}",
-                f"#{relationships.eyes.rgb.r:02X}{relationships.eyes.rgb.g:02X}{relationships.eyes.rgb.b:02X}",
-                f"#{relationships.hair.rgb.r:02X}{relationships.hair.rgb.g:02X}{relationships.hair.rgb.b:02X}"
-            ]
-)'''

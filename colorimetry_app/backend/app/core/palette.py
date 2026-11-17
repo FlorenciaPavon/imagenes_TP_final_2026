@@ -2,16 +2,10 @@ import colorsys
 from PIL import Image
 import math
 
-'''
-El calculo de umbrales de claridad y croma se hizo teniendo en cuenta el archivo Skin Database 1-92-xlsx obtenido desde https://cie.co.at/technicalcommittees/skin-colour-database
-corresponde al origen 1 (UK) y las ubicaciones 2 (mejilla), 3 (pómulo), 4 (mentón) y 6 (frente): 150 sujetos, una medición por sujeto en cada zona, 600 registros en total. Los percentiles están agrupados entre las cuatro zonas, no calculados por separado.
-se usaron los percentiles 33,33 y 66,67, con interpolación lineal y redondeo a dos decimales
-'''
-
 
 def rgb_to_hsv(rgb: tuple[int, int, int]) -> tuple[float, float, float]:   
     """
-    Convierte un color RGB (0-255) a HSV (0-1).
+    Converts an RGB (0-255) to HSV (0-1) 
     """
 
     normalized = tuple(channel / 255 for channel in rgb)
@@ -295,9 +289,11 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
 
 
 def classify_lightness(l_value):
-    # Referencia de piel: 150 sujetos del origen 1 (UK), medidos en mejilla, pómulo,
-    # mentón y frente. Los 600 valores agrupados usan percentiles lineales 33,33/66,67,
-    # redondeados a dos decimales. Ojos y cabello no se calibraron por separado.
+    '''
+    Referencia de piel: 150 sujetos del origen 1 (UK), medidos en mejilla, pómulo,
+    mentón y frente. Los 600 valores agrupados usan percentiles lineales 33,33/66,67,
+    redondeados a dos decimales. Ojos y cabello no se calibraron por separado.
+    '''
     if l_value <= 60.33:
         return "dark"
     elif l_value <= 64.32:
