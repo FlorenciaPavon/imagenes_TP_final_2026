@@ -14,11 +14,11 @@ ErrorCode = Literal[
     "INVALID_FILE",
     "UNSUPPORTED_FORMAT",
     "FILE_TOO_LARGE",
-    "INVALID_PARAMETERS", #Los datos recibidos no cumplen alguna regla del análisis. Reglas de negocio
-    "INVALID_COORDINATES", #	Alguna coordenada está fuera de los límites de la imagen.
+    "INVALID_PARAMETERS", 
+    "INVALID_COORDINATES", 
 ]
 
-Temperature = Literal["warm", "cool", "undetermined"] #Literal restringe los valores permitidos. En cambio, si usamos str, acepta cualquier texto, incluso uno que no tenga sentido para nuestro análisis.
+Temperature = Literal["warm", "cool", "undetermined"] 
 
 Lightness = Literal["light", "medium", "dark"]
 
@@ -34,38 +34,28 @@ Season = Literal[
     "No determinada"
 ]
 
-class PointSelection(BaseModel):#permite que Pydantic valide los datos.
-    x: int = Field(..., ge=0) #Field(...): indica que el dato es obligatorio. ge=0: significa greater than or equal to 0, es decir, mayor o igual a cero.
+class PointSelection(BaseModel):
+    x: int = Field(..., ge=0) 
     y: int = Field(..., ge=0)
 
 class Selections(BaseModel):
     skin: PointSelection
     eyes: PointSelection
     hair: PointSelection
-'''no estamos declarando nuevamente x e y.
 
-Estamos diciendo que cada atributo (skin, eyes, hair) debe ser un objeto que cumpla con la estructura de PointSelection.
-por ej
-selections = Selections(
-    skin={"x": 250, "y": 180},
-    eyes={"x": 270, "y": 130},
-    hair={"x": 300, "y": 60}
-)
-Pydantic valida los tres puntos utilizando las mismas reglas. sino manda error 422: el formato o la estructura de los datos recibidos no cumple el esquema definido.
-'''
 class RGBColor(BaseModel):
-    r: int = Field(..., ge=0, le=255) #0 hasta 255.
+    r: int = Field(..., ge=0, le=255) 
     g: int = Field(..., ge=0, le=255)
     b: int = Field(..., ge=0, le=255)
 
 class HSVColor(BaseModel):
-    h: float = Field(..., ge=0, le=1) #colorsys, trabaja con los tres componentes HSV en escala normalizada
+    h: float = Field(..., ge=0, le=1) 
     s: float = Field(..., ge=0, le=1)
     v: float = Field(..., ge=0, le=1)
 
 class LabColor(BaseModel):
     l: float = Field(..., ge=0, le=100)
-    a: float = Field(..., ge=-128, le=127)# corresponden a la representación LAB de Pillow. Pillow tiene precisión limitada porque trabaja con canales de 8 bits. Por eso, los valores a* y b* son enteros, aunque los esten como float en Pydantic
+    a: float = Field(..., ge=-128, le=127)
     b: float = Field(..., ge=-128, le=127)
 
 class AnalyzedColor(BaseModel):
@@ -99,9 +89,9 @@ class ColorRelationships(BaseModel):
 
     
 
-class Palette(BaseModel): #validamos que exista al menos un color. También se puede agregar una validación específica para asegurar que cada texto tenga formato hexadecimal
+class Palette(BaseModel): 
     name: str 
-    colors: list[str] = Field(..., min_length=1) #### A MEJORAR
+    colors: list[str] = Field(..., min_length=1) 
 
 class SeasonalAnalysis(BaseModel):
     temperature_delta: float
