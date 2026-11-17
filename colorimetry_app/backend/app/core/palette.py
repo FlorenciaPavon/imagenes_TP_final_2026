@@ -182,10 +182,20 @@ def describe_lab_chromaticity(a: float, b: float) -> dict:
             }
                     
     return lab_chromaticity_details
-  
+'''
 def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
     temperature_delta = skin["lab"][2] - skin["lab"][1]
 
+    if abs(temperature_delta) <= 3:
+        temperature = "undetermined"
+    elif temperature_delta > 0:
+        temperature = "warm"
+    else:
+        temperature = "cool"
+    luminosity = classify_luminosity(skin["lab"][0])
+    chromaticity = classify_chromaticity(skin["chromaticity"])
+
+    NO CLASIFICA BIEN INVIERNO
     if temperature_delta == 0:
         temperature = "undetermined"
     elif temperature_delta > 0:
@@ -193,8 +203,6 @@ def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
     else:
         temperature = "cool"
 
-    luminosity = classify_luminosity(skin["lab"][0])
-    chromaticity = classify_chromaticity(skin["chromaticity"])
 
     profiles = {
         ("warm", "light", "intense"): "Primavera",
@@ -206,6 +214,25 @@ def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
         (temperature, luminosity, chromaticity),
         "No determinada",
     )
+    # DESAMBIGUACIÓN
+    if temperature == "undetermined":
+        contrast_lab = get_luminosity_contrast(
+            skin["lab"][0],
+            eyes["lab"][0],
+            hair["lab"][0]
+        )
+
+    if luminosity == "dark":
+        if contrast_lab >= 20:
+            season = "Invierno"
+        else:
+            season = "Otoño"
+
+    elif luminosity == "light":
+        if contrast_lab >= 20:
+            season = "Primavera"
+        else:
+            season = "Verano"
 
     lightness_values = [
         skin["lab"][0],
@@ -230,8 +257,88 @@ def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
         "season": season,
         "confidence": confidence,
     }
+'''
 
+def classify_season(skin: dict, eyes: dict, hair: dict) -> dict:
 
+    temperature_delta = skin["lab"][2] - skin["lab"][1]
+
+    if temperature_delta > 0:
+        temperature = "warm"
+    elif temperature_delta < 0:
+        temperature = "cool"
+    else:
+        temperature = "undetermined"
+
+    luminosity = classify_luminosity(skin["lab"][0])
+    chromaticity = classify_chromaticity(skin["chromaticity"])
+
+    if temperature == "warm":
+        season = "Primavera" if luminosity == "light" else "Otoño"
+    elif temperature == "cool":
+        season = "Verano" if luminosity == "light" else "Invierno"
+    else:
+        season = "No determinada"
+
+    lightness_values = [
+        skin["lab"][0],
+        eyes["lab"][0],
+        hair["lab"][0],
+    ]
+
+    high_contrast = (
+        max(lightness_values) - min(lightness_values)
+    ) >= 20
+
+    expects_high_contrast = season in (
+        "Primavera",
+        "Invierno"
+    )
+    contrast_matches = (
+        high_contrast == expects_high_contrast
+    )
+
+    expected_chromaticity = {
+        "Primavera": "intense",
+        "Verano": "soft",
+        "Otoño": "soft",
+        "Invierno": "intense",
+    }
+    chromaticity_matches = (
+        chromaticity == expected_chromaticity.get(season)
+    )
+
+    if (
+        temperature == "undetermined"
+        or season == "No determinada"
+        or abs(temperature_delta) <= 3
+    ):
+        confidence = "low"
+    elif contrast_matches and chromaticity_matches:
+        confidence = "high"
+    elif contrast_matches or chromaticity_matches:
+        confidence = "medium"
+    else:
+        confidence = "low"
+
+    return {
+        "temperature_delta": temperature_delta,
+        "temperature": temperature,
+        "luminosity": luminosity,
+        "chromaticity": chromaticity,
+        "season": season,
+        "confidence": confidence,
+    }
+
+'''
+    return {
+        "temperature": temperature,
+        "luminosity": luminosity,
+        "chromaticity": chromaticity,
+        "season": season,
+        "confidence": confidence,
+    }
+'''
 def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[int, int, int], hair_rgb: tuple[int, int, int]) -> dict:
     # La estación usa categorías de piel; ojos y cabello aportan contraste.
     skin = describe_color(skin_rgb)
@@ -282,7 +389,7 @@ def analyze_color_relationships(skin_rgb: tuple[int, int, int], eyes_rgb: tuple[
         "pairwise_value_differences": pairwise_value_differences,
         "pairwise_chrom_differences": pairwise_chrom_differences,
         "pairwise_hue_differences": pairwise_hue_differences,
-        "seasonal_analysis": seasonal_analysis
+        "seasonal_analysis": seasonal_analysis,
     }
 
     

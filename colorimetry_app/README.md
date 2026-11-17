@@ -10,14 +10,15 @@ El color se estima usando la mediana de una región de hasta 5 × 5 píxeles alr
 
 Los cortes de luminosidad (`L*`: 60.33 y 64.32) y cromaticidad (`C*`: 20.04 y 22.05) se calcularon sobre 600 mediciones de piel: 150 sujetos del origen 1 (UK), con una medición por sujeto en cada una de estas zonas: mejilla (código 2), pómulo (3), mentón (4) y frente (6). Se agruparon las cuatro zonas y se usaron los percentiles 33,33 y 66,67 con interpolación lineal, redondeados a dos decimales.
 
-Estos umbrales describen la distribución de las mediciones de piel. La aplicación también los usa para mostrar categorías de ojos y cabello, pero esas categorías son exploratorias y no se calibraron por separado. La regla de estación usa además una heurística inicial; la base de datos no contiene etiquetas de estaciones para validarla.
+Estos umbrales describen únicamente la distribución de las mediciones de piel. Los ojos y el cabello se muestran con sus valores continuos de `L*` y `C*`; no se les asignan categorías usando los cortes de piel. La base de datos no contiene etiquetas de estaciones para validar la heurística.
 
-La heurística toma la piel como referencia principal: considera cálida cuando `b* >= a*`, y usa sus categorías de luminosidad y cromaticidad para decidir si es clara e intensa. Ojos y cabello complementan el contexto mediante el contraste: se considera alto cuando el rango de `L*` entre los tres puntos es de al menos 20. La asignación actual es:
+La heurística toma la piel como referencia para la temperatura (delta = `b* - a*`: cálida si delta > 0, fría si delta < 0 e indeterminada si delta = 0) y para las categorías de luminosidad y cromaticidad. La luminosidad de piel elige la estación base: cálida y clara corresponde a Primavera; cálida y media u oscura, a Otoño; fría y clara, a Verano; fría y media u oscura, a Invierno. Ojos y cabello aportan el contraste: se considera alto cuando el rango de `L*` entre los tres puntos es de al menos 20. La cromaticidad de piel y el contraste ajustan la confianza:
 
-- Piel cálida: Primavera si es clara y además intensa o de alto contraste; en los demás casos, Otoño.
-- Piel fría: Verano si es clara, no intensa y de bajo contraste; en los demás casos, Invierno.
+- Confianza alta: cromaticidad y contraste acompañan la estación.
+- Confianza media: solo uno de esos indicadores coincide.
+- Confianza baja: `|delta| <= 3`, ninguno de esos indicadores coincide, la temperatura es indeterminada o no se asigna estación.
 
-Es una propuesta exploratoria del proyecto, no una regla validada con diagnósticos o etiquetas de estación.
+Es una propuesta exploratoria del proyecto, no una regla validada con diagnósticos o etiquetas de estación. Los umbrales de piel tampoco se validaron para clasificar estaciones.
 
 ## Requisitos
 
@@ -45,7 +46,7 @@ La documentación interactiva de la API está disponible en <http://127.0.0.1:80
 
 1. Cargá una fotografía.
 2. Elegí piel, ojos o cabello y hacé clic en el punto correspondiente de la imagen. Repetí para las tres características.
-3. Seleccioná **Analizar fotografía** para ver los colores estimados, sus categorías, el contraste global y la paleta recomendada.
+3. Seleccioná **Analizar fotografía** para ver los valores continuos de los tres puntos, la clasificación orientativa de piel, el contraste global y la paleta sugerida.
 
 Se aceptan imágenes PNG, JPEG, WEBP y BMP de hasta 10 MiB. Las coordenadas seleccionadas corresponden a la imagen original.
 

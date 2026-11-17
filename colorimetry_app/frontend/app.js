@@ -220,6 +220,7 @@ analyzeButton.addEventListener("click", async function () {
 
 function renderAnalysis(result) {
     const analysis = result.analysis;
+    const seasonal = result.seasonal_analysis;
 
     const colors = [
         {
@@ -249,15 +250,49 @@ function renderAnalysis(result) {
         intense: "Intensa"
     };
 
-    analysisResult.innerHTML = `
-        <h2 class="results-title">Tu análisis de color</h2>
-        <p class="analysis-note">
-            La piel guía la calidez, luminosidad y cromaticidad; ojos y cabello aportan contraste.
-            Sus categorías usan rangos estimados con datos de piel, así que son exploratorias.
-            La estación y la paleta son orientativas.
-        </p>
+    const temperatureLabels = {
+        warm: "Cálida",
+        cool: "Fría",
+        undetermined: "Indeterminada"
+    };
 
-        <h3 class="result-section-heading">Paleta recomendada: ${result.palette.name}</h3>
+    const confidenceLabels = {
+        low: "Baja",
+        medium: "Media",
+        high: "Alta"
+    };
+
+    const paletteHeading = seasonal.season === "No determinada"
+        ? "Colores seleccionados (sin estación determinada)"
+        : `Paleta orientativa: ${result.palette.name}`;
+
+    analysisResult.innerHTML = `
+        <h2 id="analysisResultTitle" class="results-title">Tu análisis de color</h2>
+        <div class="analysis-note">
+            <p>
+                La piel guía la estación. Los valores de ojos y cabello se muestran de forma
+                continua y aportan contexto de contraste. Los cortes y la estación son
+                exploratorios; la luz y la selección de los puntos pueden influir.
+            </p>
+            <p>
+                <strong>Temperatura de piel:</strong>
+                ${temperatureLabels[seasonal.temperature] || "Sin clasificar"}
+                &nbsp;·&nbsp;
+                <strong>Luminosidad de piel:</strong>
+                ${luminosityLabels[seasonal.luminosity] || "Sin clasificar"}
+                &nbsp;·&nbsp;
+                <strong>Cromaticidad de piel:</strong>
+                ${chromaticityLabels[seasonal.chromaticity] || "Sin clasificar"}
+            </p>
+            <p>
+                <strong>Estación:</strong> ${seasonal.season}
+                &nbsp;·&nbsp;
+                <strong>Confianza:</strong>
+                ${confidenceLabels[seasonal.confidence] || "Sin clasificar"}
+            </p>
+        </div>
+
+        <h3 class="result-section-heading">${paletteHeading}</h3>
 
         <div class="palette-grid">
             ${result.palette.colors.map(color => `
@@ -282,12 +317,6 @@ function renderAnalysis(result) {
                     .join("")
                     .toUpperCase();
 
-                const luminosity =
-                    luminosityLabels[color.data.luminosity_category];
-
-                const chromaticity =
-                    chromaticityLabels[color.data.chromaticity_category];
-
                 return `
                     <div class="color-card">
 
@@ -303,13 +332,13 @@ function renderAnalysis(result) {
                         <div class="color-characteristics">
 
                             <p>
-                                <strong>Luminosidad:</strong>
-                                ${luminosity || "Sin clasificar"}
+                                <strong>L*:</strong>
+                                ${color.data.lab.l.toFixed(2)}
                             </p>
 
                             <p>
-                                <strong>Cromaticidad:</strong>
-                                ${chromaticity || "Sin clasificar"}
+                                <strong>C*:</strong>
+                                ${color.data.chromaticity.toFixed(2)}
                             </p>
 
                         </div>

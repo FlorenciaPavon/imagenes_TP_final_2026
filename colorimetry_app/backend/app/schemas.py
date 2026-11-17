@@ -106,6 +106,7 @@ class Palette(BaseModel): #validamos que exista al menos un color. También se p
     colors: list[str] = Field(..., min_length=1) #### A MEJORAR
 
 class SeasonalAnalysis(BaseModel):
+    temperature_delta: float
     temperature: Temperature
     luminosity: Luminosity
     chromaticity: Chromaticity
