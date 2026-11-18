@@ -1,3 +1,13 @@
+# Materia: Procesamiento de Imágenes
+# Año y cuatrimestre de cursada: 2026, 3er año- 5to cuatrimestre
+# Su nombre y apellido: Florencia Pavon
+# Docente: Juan Ignacio Bonini
+# Que los motivo a crear lo que crearon:
+ Poder resolver problemas del día a día relacionados con estilo y moda aplicando los conocimientos adquiridos en la materia
+# Que problemáticas encontraron y como las resolvieron: 
+La logica de umbrales de color, temperatura y luminosidad fue ajustada muchas veces. Si bien cuento con un dataset de colores de piel, no encontre lo mismo para ojos y cabello. Por otro lado, las referencias se tomaron con ciertas caracteristicas de balance de blancos y otros parametros funcionales que dependen de la camara e iluminacion que se utilice, por lo que la prediccion varía mucho segun que zonas se tomen como referencia dentro de una misma foto.
+Al principio utilice las referencias de piel para ojos y cabello, pero la mayoria de las veces reconocia una sola paleta. Luego las separe, pero eso necesito elegir umbrales para poder diferenciar entre tonos mas calidos y frios. Si bien la calibracion de esta manera mejoró los resultados, no eran los mejores.
+
 # Análisis de colorimetría personal
 
 Aplicación web para explorar relaciones de color a partir de una fotografía. Permite seleccionar un punto de la piel, los ojos y el cabello; el backend estima el color de cada zona, calcula características en RGB, HSV y CIELAB, y devuelve una estación y una paleta orientativas.
@@ -42,13 +52,22 @@ Luego abrí <http://127.0.0.1:8000/>. La interfaz y la API se sirven desde FastA
 
 La documentación interactiva de la API está disponible en <http://127.0.0.1:8000/docs>.
 
+## Despliegue en Vercel
+
+1. Importá este repositorio en Vercel.
+2. En la configuración del proyecto, elegí `colorimetry_app` como **Root Directory**.
+3. Dejá que Vercel detecte FastAPI y las dependencias de `requirements.txt`; no hace falta configurar un comando de build ni un directorio de salida.
+4. Desplegá y comprobá que `https://<tu-dominio>/api/health` responda `{"status":"ok"}`.
+
+Vercel limita a 4,5 MB el cuerpo de cada solicitud a una función. Por eso, esta app acepta fotografías de hasta 4 MiB (4 MB), dejando margen para los datos del formulario multipart.
+
 ## Uso
 
 1. Cargá una fotografía.
 2. Elegí piel, ojos o cabello y hacé clic en el punto correspondiente de la imagen. Repetí para las tres características.
 3. Seleccioná **Analizar fotografía** para ver los valores continuos de los tres puntos, la clasificación heurística de piel, los rangos de `V` (HSV) y `L*` (CIELAB), y la paleta orientativa.
 
-Se aceptan imágenes PNG, JPEG, WEBP y BMP de hasta 10 MiB. Las coordenadas seleccionadas corresponden a la imagen original.
+Se aceptan imágenes PNG, JPEG, WEBP y BMP de hasta 4 MiB. Las coordenadas seleccionadas corresponden a la imagen original.
 
 ## API
 
@@ -81,6 +100,7 @@ python -m unittest discover -s tests -v
 ## Estructura del proyecto
 
 ```text
+main.py         Punto de entrada para el despliegue en Vercel
 backend/
   app/
     core/       Procesamiento de imágenes y análisis de color

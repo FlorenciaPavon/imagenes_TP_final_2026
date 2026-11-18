@@ -8,6 +8,7 @@ const selectionStatus = document.getElementById("selectionStatus");
 const analyzeButton = document.getElementById("analyzeButton");
 const analysisResult = document.getElementById("analysisResult");
 const partButtons = [...document.querySelectorAll("[data-part]")];
+const MAX_UPLOAD_SIZE_BYTES = 4 * 1024 * 1024;
 
 const partLabels = {
     skin: "Piel",
@@ -68,7 +69,35 @@ imageInput.addEventListener("change", function () {
 
     if (!file) return;
 
-    if (previewURL) URL.revokeObjectURL(previewURL);
+    if (previewURL) {
+        URL.revokeObjectURL(previewURL);
+        previewURL = null;
+    }
+
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+        imageInput.value = "";
+        imagePreview.removeAttribute("src");
+        imageWrapper.hidden = true;
+        placeholder.hidden = false;
+        placeholder.textContent =
+            "La fotografía supera el límite de 4 MB. Probá con una imagen más liviana.";
+
+        selections.skin = null;
+        selections.eyes = null;
+        selections.hair = null;
+        markers.innerHTML = "";
+        selectedPart = null;
+        partButtons.forEach(button => {
+            button.disabled = true;
+            button.setAttribute("aria-pressed", "false");
+        });
+        analysisResult.hidden = true;
+        analysisResult.textContent = "";
+        selectionStatus.textContent = "La fotografía supera el límite de 4 MB.";
+        updateAnalyzeButton();
+        return;
+    }
+
     previewURL = URL.createObjectURL(file);
 
     imagePreview.src = previewURL;
